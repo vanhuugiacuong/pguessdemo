@@ -13,6 +13,7 @@ export class GameStateService {
   public clearDrawingEvent$: Observable<void>;
 
   private playerName: string = 'Player 1';
+  private playerAvatar: string = '2.svg';
 
   constructor(private mockServer: MockServerService) {
     this.roomState$ = this.mockServer.roomState$;
@@ -25,13 +26,22 @@ export class GameStateService {
     return this.playerName;
   }
 
+  public getPlayerAvatar(): string {
+    return this.playerAvatar;
+  }
+
   public getWordBank(): string[] {
     return this.mockServer.getWordBank();
   }
 
-  public createRoom(playerName: string, settings: GameSettings): void {
+  public createRoom(playerName: string, avatar: string, settings: GameSettings): void {
     this.playerName = playerName.trim() || 'Player 1';
-    this.mockServer.createRoom(this.playerName, settings);
+    this.playerAvatar = avatar;
+    this.mockServer.createRoom(this.playerName, this.playerAvatar, settings);
+  }
+
+  public updateRoomSettings(settings: Partial<GameSettings>): void {
+    this.mockServer.updateRoomSettings(settings);
   }
 
   public startGame(): void {

@@ -1,1 +1,29 @@
-/* Custom scrollbars or adjustments for gameboard list containers */
+/* Custom styles for Gartic Phone UI integration */
+
+.gartic-bg-drawing {
+  background: radial-gradient(circle, #f05469 0%, #aa2338 100%) !important;
+  background-size: cover;
+  background-repeat: no-repeat;
+  position: relative;
+  overflow: hidden;
+}
+
+.gartic-bg-drawing::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    -45deg,
+    rgba(0, 0, 0, 0.05),
+    rgba(0, 0, 0, 0.05) 15px,
+    transparent 15px,
+    transparent 30px
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+.gartic-bg-drawing > * {
+  position: relative;
+  z-index: 2;
+}

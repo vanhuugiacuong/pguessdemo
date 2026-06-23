@@ -1,22 +1,46 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { GameStateService } from '../../services/game-state.service';
 import { RoomState, Player, GamePhase } from '../../models/game.model';
 import { Subscription } from 'rxjs';
 import { CanvasComponent } from '../canvas/canvas.component';
 import { ChatComponent } from '../chat/chat.component';
 import { GalleryRevealComponent } from '../gallery-reveal/gallery-reveal.component';
+import {
+  LucidePlay,
+  LucideVolume2,
+  LucideVolumeX,
+  LucideCopy,
+  LucideQrCode,
+  LucideArrowLeft
+} from '@lucide/angular';
 
 @Component({
   selector: 'app-game-board',
   standalone: true,
-  imports: [CommonModule, CanvasComponent, ChatComponent, GalleryRevealComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    CanvasComponent,
+    ChatComponent,
+    GalleryRevealComponent,
+    LucidePlay,
+    LucideVolume2,
+    LucideVolumeX,
+    LucideCopy,
+    LucideQrCode,
+    LucideArrowLeft
+  ],
   templateUrl: './game-board.component.html',
   styleUrl: './game-board.component.css',
 })
 export class GameBoardComponent implements OnInit, OnDestroy {
   public roomState: RoomState | null = null;
   private subscription!: Subscription;
+
+  public activeSettingsTab: 'preset' | 'custom' = 'preset';
+  public isMuted = false;
 
   constructor(private gameState: GameStateService) {}
 
@@ -91,6 +115,46 @@ export class GameBoardComponent implements OnInit, OnDestroy {
     if (!state) return [];
     return [...state.players].sort((a, b) => b.score - a.score);
   }
+
+  // --- LOBBY ROOM SETTINGS ACTIONS ---
+
+  public get selectedGameMode(): 'A' | 'B' {
+    return this.roomState?.maxRounds === 3 ? 'B' : 'A';
+  }
+
+  public get currentBotCount(): number {
+    if (!this.roomState) return 3;
+    return this.roomState.players.filter(p => p.isBot).length;
+  }
+
+  public changeMode(mode: 'A' | 'B'): void {
+    this.gameState.updateRoomSettings({ mode });
+  }
+
+  public changeTimeLimit(limit: number): void {
+    this.gameState.updateRoomSettings({ drawTimeLimit: limit });
+  }
+
+  public changeBotCount(bots: number): void {
+    this.gameState.updateRoomSettings({ botCount: bots });
+  }
+
+  public toggleMute(): void {
+    this.isMuted = !this.isMuted;
+  }
+
+  public copyInviteLink(): void {
+    if (!this.roomState) return;
+    navigator.clipboard.writeText(this.roomState.id).then(() => {
+      alert('Đã sao chép Room ID: ' + this.roomState?.id);
+    });
+  }
+
+  public showQRCode(): void {
+    alert('QR Code cho phòng: ' + this.roomState?.id);
+  }
+
+  // --- GAME ACTIONS ---
 
   public onStartGame(): void {
     this.gameState.startGame();

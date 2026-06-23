@@ -137,6 +137,6 @@ export class LobbyComponent implements OnInit {
       wordCategory: this.wordCategory,
     };
 
-    this.gameState.createRoom(this.nickname, settings);
+    this.gameState.createRoom(this.nickname, this.currentAvatar, settings);
   }
 }

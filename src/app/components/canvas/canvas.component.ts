@@ -8,7 +8,7 @@ import {
   OnInit,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { DrawStroke, DrawPoint } from '../../models/game.model';
+import { DrawStroke, DrawPoint, RoomState } from '../../models/game.model';
 import { GameStateService } from '../../services/game-state.service';
 import { Subscription } from 'rxjs';
 
@@ -41,34 +41,35 @@ export class CanvasComponent implements OnInit, AfterViewInit, OnDestroy {
   private currentStroke: DrawPoint[] = [];
 
   // Brush settings
-  public currentColor = '#1f2937'; // Default dark gray
+  public currentColor = '#000000'; // Default black
   public currentWidth = 6;
-  public selectedTool: 'brush' | 'eraser' = 'brush';
+  public currentOpacity = 1.0;
+  public selectedTool: 'brush' | 'eraser' | 'rectangle' | 'circle' | 'line' | 'picker' | 'bucket' = 'brush';
 
   public colors = [
-    '#1f2937', // Dark Gray
-    '#ef4444', // Red
-    '#f97316', // Orange
-    '#eab308', // Yellow
-    '#22c55e', // Green
-    '#3b82f6', // Blue
-    '#a855f7', // Purple
-    '#ec4899', // Pink
-    '#78350f', // Brown
-    '#9ca3af', // Light Gray
+    '#000000', '#555555', '#004de6',
+    '#ffffff', '#c1c1c1', '#00ccff',
+    '#006600', '#800000', '#663300',
+    '#00cc00', '#ff0000', '#ff6600',
+    '#808000', '#990066', '#cc9966',
+    '#ffff00', '#ff00ff', '#ffcc99'
   ];
 
   public brushSizes = [
-    { label: 'S', value: 3 },
-    { label: 'M', value: 6 },
-    { label: 'L', value: 12 },
-    { label: 'XL', value: 24 },
+    { label: 'XS', value: 2 },
+    { label: 'S', value: 6 },
+    { label: 'M', value: 12 },
+    { label: 'L', value: 24 },
+    { label: 'XL', value: 48 }
   ];
 
   // Local drawing data (for undo/redo)
   private strokes: DrawStroke[] = [];
   private redoStack: DrawStroke[] = [];
 
+  public roomState: RoomState | null = null;
+  public isDoneDrawing = false;
+  private lastRoundNumber = 0;
   private subscriptions: Subscription = new Subscription();
 
   // Internal logical canvas resolution (keeps drawing consistent across different screen sizes)
@@ -77,7 +78,39 @@ export class CanvasComponent implements OnInit, AfterViewInit, OnDestroy {
 
   constructor(private gameState: GameStateService) {}
 
+  public maxTimeObserved = 60;
+
+  public get timerPercentage(): number {
+    if (!this.roomState || this.maxTimeObserved <= 0) return 100;
+    return (this.roomState.timeLeft / this.maxTimeObserved) * 100;
+  }
+
+  public get opacityPercent(): number {
+    return Math.round(this.currentOpacity * 100);
+  }
+
   ngOnInit(): void {
+    // Listen to roomState to display draw instruction
+    this.subscriptions.add(
+      this.gameState.roomState$.subscribe((state) => {
+        this.roomState = state;
+        if (state) {
+          if (state.roundNumber !== this.lastRoundNumber) {
+            this.lastRoundNumber = state.roundNumber;
+            this.maxTimeObserved = state.timeLeft;
+            this.isDoneDrawing = false; // Reset done state on new round
+            this.strokes = []; // Clear canvas for new round
+            this.redoStack = [];
+            if (this.isCanvasInitialized) {
+              this.clearLocalCanvas();
+            }
+          } else if (state.timeLeft > this.maxTimeObserved) {
+            this.maxTimeObserved = state.timeLeft;
+          }
+        }
+      })
+    );
+
     if (this.readOnly && this.streamRealTime) {
       // Listen to real-time streams
       this.subscriptions.add(
@@ -92,6 +125,12 @@ export class CanvasComponent implements OnInit, AfterViewInit, OnDestroy {
         }),
       );
     }
+  }
+
+  public submitDone(): void {
+    if (this.isDoneDrawing) return;
+    this.isDoneDrawing = true;
+    this.stopDrawing();
   }
 
   ngAfterViewInit(): void {
@@ -120,77 +159,99 @@ export class CanvasComponent implements OnInit, AfterViewInit, OnDestroy {
   // --- DRAWING LOGIC ---
 
   public onMouseDown(event: MouseEvent): void {
-    if (this.readOnly) return;
-    this.startDrawing(this.getCanvasCoords(event.clientX, event.clientY));
+    if (this.readOnly || this.isDoneDrawing) return;
+    const coords = this.getCanvasCoords(event.clientX, event.clientY);
+    this.startDrawing(coords);
   }
 
   public onMouseMove(event: MouseEvent): void {
-    if (!this.drawing || this.readOnly) return;
-    this.drawMove(this.getCanvasCoords(event.clientX, event.clientY));
+    if (!this.drawing || this.readOnly || this.isDoneDrawing) return;
+    const coords = this.getCanvasCoords(event.clientX, event.clientY);
+    this.drawMove(coords);
   }
 
   public onMouseUp(): void {
-    if (this.readOnly) return;
+    if (this.readOnly || this.isDoneDrawing) return;
     this.stopDrawing();
   }
 
   public onTouchStart(event: TouchEvent): void {
-    if (this.readOnly || event.touches.length === 0) return;
+    if (this.readOnly || this.isDoneDrawing || event.touches.length === 0) return;
     event.preventDefault();
     const touch = event.touches[0];
-    this.startDrawing(this.getCanvasCoords(touch.clientX, touch.clientY));
+    const coords = this.getCanvasCoords(touch.clientX, touch.clientY);
+    this.startDrawing(coords);
   }
 
   public onTouchMove(event: TouchEvent): void {
-    if (!this.drawing || this.readOnly || event.touches.length === 0) return;
+    if (!this.drawing || this.readOnly || this.isDoneDrawing || event.touches.length === 0) return;
     event.preventDefault();
     const touch = event.touches[0];
-    this.drawMove(this.getCanvasCoords(touch.clientX, touch.clientY));
+    const coords = this.getCanvasCoords(touch.clientX, touch.clientY);
+    this.drawMove(coords);
   }
 
   public onTouchEnd(): void {
-    if (this.readOnly) return;
+    if (this.readOnly || this.isDoneDrawing) return;
     this.stopDrawing();
   }
 
   private startDrawing(point: DrawPoint): void {
-    this.drawing = true;
-    this.currentStroke = [point];
-    this.redoStack = []; // Clear redo stack on new action
-
-    this.ctx.beginPath();
-    this.ctx.moveTo(point.x, point.y);
-
-    // Apply tools
-    if (this.selectedTool === 'eraser') {
-      this.ctx.globalCompositeOperation = 'destination-out';
-      this.ctx.lineWidth = this.currentWidth * 2; // eraser is thicker
-    } else {
-      this.ctx.globalCompositeOperation = 'source-over';
-      this.ctx.strokeStyle = this.currentColor;
-      this.ctx.lineWidth = this.currentWidth;
+    if (this.selectedTool === 'picker') {
+      this.pickColorAtPoint(point);
+      return;
     }
+
+    if (this.selectedTool === 'bucket') {
+      this.fillCanvasBackground();
+      return;
+    }
+
+    this.drawing = true;
+    // For freehand drawing, points list contains path. For shapes, points[0] is start, points[1] is end
+    this.currentStroke = [point, point];
+    this.redoStack = []; // Clear redo stack on new action
   }
 
   private drawMove(point: DrawPoint): void {
     if (this.currentStroke.length === 0) return;
 
-    const prevPoint = this.currentStroke[this.currentStroke.length - 1];
-    this.currentStroke.push(point);
+    if (this.selectedTool === 'brush' || this.selectedTool === 'eraser') {
+      const prevPoint = this.currentStroke[this.currentStroke.length - 1];
+      this.currentStroke.push(point);
 
-    this.ctx.beginPath();
-    this.ctx.moveTo(prevPoint.x, prevPoint.y);
-    this.ctx.lineTo(point.x, point.y);
-    this.ctx.stroke();
+      this.ctx.beginPath();
+      this.ctx.globalAlpha = this.currentOpacity;
 
-    // Stream out realtime drawing strokes
-    const stroke: DrawStroke = {
-      points: this.currentStroke,
-      color: this.currentColor,
-      width: this.currentWidth,
-      isEraser: this.selectedTool === 'eraser',
-    };
-    this.gameState.sendStroke(stroke);
+      if (this.selectedTool === 'eraser') {
+        this.ctx.globalCompositeOperation = 'destination-out';
+        this.ctx.lineWidth = this.currentWidth * 2;
+      } else {
+        this.ctx.globalCompositeOperation = 'source-over';
+        this.ctx.strokeStyle = this.currentColor;
+        this.ctx.lineWidth = this.currentWidth;
+      }
+
+      this.ctx.moveTo(prevPoint.x, prevPoint.y);
+      this.ctx.lineTo(point.x, point.y);
+      this.ctx.stroke();
+
+      // Stream out realtime drawing strokes
+      const stroke: DrawStroke = {
+        points: this.currentStroke,
+        color: this.currentColor,
+        width: this.currentWidth,
+        isEraser: this.selectedTool === 'eraser',
+        shapeType: this.selectedTool as any,
+        opacity: this.currentOpacity
+      };
+      this.gameState.sendStroke(stroke);
+    } else {
+      // Shape drawing preview
+      this.currentStroke[1] = point;
+      this.redrawAll();
+      this.drawShapePreview(this.currentStroke[0], this.currentStroke[1], this.selectedTool);
+    }
   }
 
   private stopDrawing(): void {
@@ -203,22 +264,23 @@ export class CanvasComponent implements OnInit, AfterViewInit, OnDestroy {
         color: this.currentColor,
         width: this.currentWidth,
         isEraser: this.selectedTool === 'eraser',
+        shapeType: this.selectedTool as any,
+        opacity: this.currentOpacity
       };
       this.strokes.push(stroke);
       this.gameState.sendStroke(stroke);
     }
     this.currentStroke = [];
+    this.redrawAll();
   }
 
   private getCanvasCoords(clientX: number, clientY: number): DrawPoint {
     const canvas = this.canvasRef.nativeElement;
     const rect = canvas.getBoundingClientRect();
 
-    // Translate client coordinates relative to canvas bounding box
     const relativeX = clientX - rect.left;
     const relativeY = clientY - rect.top;
 
-    // Scale coordinates to internal standard coordinates (800x500)
     const scaleX = this.internalWidth / rect.width;
     const scaleY = this.internalHeight / rect.height;
 
@@ -228,19 +290,61 @@ export class CanvasComponent implements OnInit, AfterViewInit, OnDestroy {
     };
   }
 
+  private pickColorAtPoint(point: DrawPoint): void {
+    try {
+      const imgData = this.ctx.getImageData(point.x, point.y, 1, 1).data;
+      const r = imgData[0];
+      const g = imgData[1];
+      const b = imgData[2];
+      const a = imgData[3];
+
+      if (a === 0) {
+        this.currentColor = '#ffffff';
+      } else {
+        const hex = '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+        this.currentColor = hex;
+      }
+      this.selectedTool = 'brush'; // switch back to brush after picking
+    } catch (e) {
+      console.error('Error picking color: ', e);
+    }
+  }
+
+  private fillCanvasBackground(): void {
+    // Fill background by adding a full canvas rectangle stroke
+    const stroke: DrawStroke = {
+      points: [{ x: 0, y: 0 }, { x: this.internalWidth, y: this.internalHeight }],
+      color: this.currentColor,
+      width: 0,
+      shapeType: 'rectangle',
+      opacity: this.currentOpacity
+    };
+    this.strokes.push(stroke);
+    this.gameState.sendStroke(stroke);
+    this.redrawAll();
+    this.selectedTool = 'brush'; // switch back to brush
+  }
+
   // --- DRAWING UTILITIES ---
 
-  public setTool(tool: 'brush' | 'eraser'): void {
+  public setTool(tool: 'brush' | 'eraser' | 'rectangle' | 'circle' | 'line' | 'picker' | 'bucket'): void {
     this.selectedTool = tool;
   }
 
   public selectColor(color: string): void {
     this.currentColor = color;
-    this.selectedTool = 'brush'; // automatically switch to brush
+    if (this.selectedTool === 'eraser' || this.selectedTool === 'picker') {
+      this.selectedTool = 'brush'; // automatically switch to brush
+    }
   }
 
   public selectWidth(width: number): void {
     this.currentWidth = width;
+  }
+
+  public setOpacity(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.currentOpacity = parseFloat(input.value);
   }
 
   public undo(): void {
@@ -272,68 +376,107 @@ export class CanvasComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private syncStrokesToGameState(): void {
-    // Overwrite backend canvas state with local updates (for client sync)
     this.gameState.clearCanvas();
     this.strokes.forEach((stroke) => {
       this.gameState.sendStroke(stroke);
     });
   }
 
+  private renderStroke(stroke: DrawStroke, ctx: CanvasRenderingContext2D): void {
+    if (stroke.points.length === 0) return;
+
+    ctx.beginPath();
+    const type = stroke.shapeType || (stroke.isEraser ? 'eraser' : 'brush');
+
+    ctx.globalAlpha = stroke.opacity !== undefined ? stroke.opacity : 1.0;
+
+    if (type === 'eraser') {
+      ctx.globalCompositeOperation = 'destination-out';
+      ctx.lineWidth = stroke.width * 2;
+    } else {
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.strokeStyle = stroke.color;
+      ctx.lineWidth = stroke.width;
+      ctx.fillStyle = stroke.color;
+    }
+
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    if (type === 'brush' || type === 'eraser') {
+      if (stroke.points.length === 1) {
+        const p = stroke.points[0];
+        ctx.arc(p.x, p.y, ctx.lineWidth / 2, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        ctx.moveTo(stroke.points[0].x, stroke.points[0].y);
+        for (let i = 1; i < stroke.points.length; i++) {
+          ctx.lineTo(stroke.points[i].x, stroke.points[i].y);
+        }
+        ctx.stroke();
+      }
+    } else if (type === 'line') {
+      if (stroke.points.length >= 2) {
+        ctx.moveTo(stroke.points[0].x, stroke.points[0].y);
+        ctx.lineTo(stroke.points[1].x, stroke.points[1].y);
+        ctx.stroke();
+      }
+    } else if (type === 'rectangle') {
+      if (stroke.points.length >= 2) {
+        const p1 = stroke.points[0];
+        const p2 = stroke.points[1];
+        // If width is 0, treat as filled rectangle (for background bucket fill)
+        if (stroke.width === 0) {
+          ctx.fillRect(p1.x, p1.y, p2.x - p1.x, p2.y - p1.y);
+        } else {
+          ctx.strokeRect(p1.x, p1.y, p2.x - p1.x, p2.y - p1.y);
+        }
+      }
+    } else if (type === 'circle') {
+      if (stroke.points.length >= 2) {
+        const p1 = stroke.points[0];
+        const p2 = stroke.points[1];
+        const radius = Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
+        ctx.arc(p1.x, p1.y, radius, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+    }
+  }
+
   private redrawAll(): void {
     this.clearLocalCanvas();
     const listToDraw = this.readOnly ? this.externalStrokes : this.strokes;
-
     listToDraw.forEach((stroke) => {
-      if (stroke.points.length === 0) return;
-
-      this.ctx.beginPath();
-      this.ctx.moveTo(stroke.points[0].x, stroke.points[0].y);
-
-      if (stroke.isEraser) {
-        this.ctx.globalCompositeOperation = 'destination-out';
-        this.ctx.lineWidth = stroke.width * 2;
-      } else {
-        this.ctx.globalCompositeOperation = 'source-over';
-        this.ctx.strokeStyle = stroke.color;
-        this.ctx.lineWidth = stroke.width;
-      }
-
-      for (let i = 1; i < stroke.points.length; i++) {
-        this.ctx.lineTo(stroke.points[i].x, stroke.points[i].y);
-      }
-      this.ctx.stroke();
+      this.renderStroke(stroke, this.ctx);
     });
+  }
+
+  private drawShapePreview(p1: DrawPoint, p2: DrawPoint, type: string): void {
+    this.ctx.beginPath();
+    this.ctx.globalAlpha = this.currentOpacity;
+    this.ctx.globalCompositeOperation = 'source-over';
+    this.ctx.strokeStyle = this.currentColor;
+    this.ctx.lineWidth = this.currentWidth;
+    this.ctx.lineCap = 'round';
+    this.ctx.lineJoin = 'round';
+
+    if (type === 'line') {
+      this.ctx.moveTo(p1.x, p1.y);
+      this.ctx.lineTo(p2.x, p2.y);
+      this.ctx.stroke();
+    } else if (type === 'rectangle') {
+      this.ctx.strokeRect(p1.x, p1.y, p2.x - p1.x, p2.y - p1.y);
+    } else if (type === 'circle') {
+      const radius = Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
+      this.ctx.arc(p1.x, p1.y, radius, 0, Math.PI * 2);
+      this.ctx.stroke();
+    }
   }
 
   // --- OBSERVER PLAYBACK ---
 
   private drawExternalStroke(stroke: DrawStroke): void {
     if (!this.ctx) return;
-    if (stroke.points.length === 0) return;
-
-    // Direct draw segment by segment
-    this.ctx.beginPath();
-
-    if (stroke.isEraser) {
-      this.ctx.globalCompositeOperation = 'destination-out';
-      this.ctx.lineWidth = stroke.width * 2;
-    } else {
-      this.ctx.globalCompositeOperation = 'source-over';
-      this.ctx.strokeStyle = stroke.color;
-      this.ctx.lineWidth = stroke.width;
-    }
-
-    if (stroke.points.length === 1) {
-      const p = stroke.points[0];
-      this.ctx.arc(p.x, p.y, this.ctx.lineWidth / 2, 0, Math.PI * 2);
-      this.ctx.fillStyle = stroke.isEraser ? 'transparent' : stroke.color;
-      this.ctx.fill();
-    } else {
-      const start = stroke.points[stroke.points.length - 2];
-      const end = stroke.points[stroke.points.length - 1];
-      this.ctx.moveTo(start.x, start.y);
-      this.ctx.lineTo(end.x, end.y);
-      this.ctx.stroke();
-    }
+    this.renderStroke(stroke, this.ctx);
   }
 }

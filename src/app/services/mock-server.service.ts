@@ -4,6 +4,8 @@ import { Player, GameSettings, ChatMessage, RoomState, DrawStroke, GamePhase, Dr
 
 const BOT_NAMES = ['Captain Draw', 'SketchBot', 'PencilPush', 'DoodleMaster', 'BrushWiz', 'ColorFly', 'ArtfulDodger', 'PixelPainter'];
 
+const AVATARS = ['2.svg', '30.svg', '33.svg', '34.svg', '39.svg', '52.svg', '58.svg'];
+
 const WORD_BANK = [
   'house', 'cat', 'tree', 'sun', 'car', 'flower', 'fish', 'cup', 'star', 'apple',
   'boat', 'bird', 'cake', 'hat', 'cloud', 'heart', 'moon', 'ball', 'book', 'face'
@@ -125,6 +127,8 @@ export class MockServerService {
   private drawingTimeLimit = 60;
   private revealTimeLimit = 10;
   private activeRoomWords: string[] = [];
+  private selectedGameMode: 'A' | 'B' = 'A';
+  private botCount = 3;
 
   constructor() {}
 
@@ -132,22 +136,26 @@ export class MockServerService {
     return WORD_BANK;
   }
 
-  public createRoom(hostName: string, settings: GameSettings): void {
+  public createRoom(hostName: string, hostAvatar: string, settings: GameSettings): void {
     this.cleanup();
+    this.selectedGameMode = settings.mode;
+    this.botCount = settings.botCount;
     this.drawingTimeLimit = settings.drawTimeLimit;
     this.revealTimeLimit = settings.revealTimeLimit;
 
     // Build player list
     const players: Player[] = [
-      { id: 'player-1', name: hostName, isBot: false, score: 0, isDrawing: false, hasGuessedCorrectly: false }
+      { id: 'player-1', name: hostName, avatar: hostAvatar, isBot: false, score: 0, isDrawing: false, hasGuessedCorrectly: false }
     ];
 
     // Add bots
     const shuffledBotNames = [...BOT_NAMES].sort(() => Math.random() - 0.5);
-    for (let i = 0; i < settings.botCount; i++) {
+    const availableAvatars = AVATARS.filter(a => a !== hostAvatar);
+    for (let i = 0; i < this.botCount; i++) {
       players.push({
         id: `bot-${i + 1}`,
         name: shuffledBotNames[i % shuffledBotNames.length],
+        avatar: availableAvatars[i % availableAvatars.length],
         isBot: true,
         score: 0,
         isDrawing: false,
@@ -165,12 +173,67 @@ export class MockServerService {
       obfuscatedWord: '',
       timeLeft: this.drawingTimeLimit,
       roundNumber: 0,
-      maxRounds: settings.mode === 'A' ? players.length : 3 // Mode A: each player gets to draw once, Mode B: 3 rounds
+      maxRounds: this.selectedGameMode === 'A' ? players.length : 3 // Mode A: each player gets to draw once, Mode B: 3 rounds
     };
 
     this.roomState.next(state);
     this.chatMessages.next([
-      { id: 'system-1', playerId: 'system', playerName: 'System', text: `Room created successfully. Playing: ${settings.mode === 'A' ? 'Skribbl Style' : 'Ice Breaker Style'}`, timestamp: Date.now(), isSystem: true, isCorrectGuess: false }
+      { id: 'system-1', playerId: 'system', playerName: 'System', text: `Room created successfully. Playing: ${this.selectedGameMode === 'A' ? 'Skribbl Style' : 'Ice Breaker Style'}`, timestamp: Date.now(), isSystem: true, isCorrectGuess: false }
+    ]);
+  }
+
+  public updateRoomSettings(settings: Partial<GameSettings>): void {
+    const state = this.roomState.value;
+    if (!state || state.phase !== 'LOBBY') return;
+
+    if (settings.mode !== undefined) {
+      this.selectedGameMode = settings.mode;
+    }
+    if (settings.drawTimeLimit !== undefined) {
+      this.drawingTimeLimit = settings.drawTimeLimit;
+    }
+
+    let players = [...state.players];
+    if (settings.botCount !== undefined) {
+      this.botCount = settings.botCount;
+      const host = players.find(p => p.id === 'player-1')!;
+      players = [host];
+      const shuffledBotNames = [...BOT_NAMES].sort(() => Math.random() - 0.5);
+      const availableAvatars = AVATARS.filter(a => a !== host.avatar);
+      for (let i = 0; i < this.botCount; i++) {
+        players.push({
+          id: `bot-${i + 1}`,
+          name: shuffledBotNames[i % shuffledBotNames.length],
+          avatar: availableAvatars[i % availableAvatars.length],
+          isBot: true,
+          score: 0,
+          isDrawing: false,
+          hasGuessedCorrectly: false
+        });
+      }
+    }
+
+    const modeText = this.selectedGameMode === 'A' ? 'Skribbl Style' : 'Ice Breaker Style';
+
+    this.roomState.next({
+      ...state,
+      players,
+      timeLeft: this.drawingTimeLimit,
+      maxRounds: this.selectedGameMode === 'A' ? players.length : 3
+    });
+
+    const messages = this.chatMessages.value;
+    this.chatMessages.next([
+      ...messages,
+      {
+        id: `sys-update-${Date.now()}`,
+        playerId: 'system',
+        playerName: 'System',
+        text: `Room configurations updated. Mode: ${modeText}, Time Limit: ${this.drawingTimeLimit}s, Bots: ${this.botCount}`,
+        timestamp: Date.now(),
+        isSystem: true,
+        isCorrectGuess: false
+      }
     ]);
   }
 
@@ -564,11 +627,7 @@ export class MockServerService {
   }
 
   private getGameSettingsMode(roomId: string): 'A' | 'B' {
-    // Mode is resolved dynamically, or we can look it up in active room settings.
-    // Defaulting based on presence of drawerId or guesserId in current roomState.
-    const state = this.roomState.value;
-    if (state && state.guesserId) return 'B';
-    return 'A';
+    return this.selectedGameMode;
   }
 
   // --- BOT SIMULATION HELPER LOGIC ---
