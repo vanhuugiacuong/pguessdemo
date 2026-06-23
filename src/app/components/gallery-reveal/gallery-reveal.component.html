@@ -1,0 +1,119 @@
+<div class="gallery-wrapper w-full h-full flex flex-col space-y-6">
+  <!-- Title / Heading -->
+  <div
+    class="text-center bg-slate-900/50 backdrop-blur border border-slate-800 p-4 rounded-2xl flex flex-col items-center justify-center"
+  >
+    <h2 class="text-lg font-bold text-slate-100 flex items-center gap-2">🕵️ Ice Breaker Gallery</h2>
+    <p class="text-slate-400 text-xs mt-1">
+      All players draw the same word. The Guesser inspects all canvases and guesses the secret word.
+    </p>
+  </div>
+
+  <!-- Canvases Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1 overflow-y-auto max-h-[50vh] p-1">
+    <div
+      *ngFor="let p of drawingPlayers"
+      class="gallery-card bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col space-y-3 relative overflow-hidden shadow-md hover:border-slate-700 transition-all"
+    >
+      <!-- Player Tag -->
+      <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+        <span class="font-bold text-sm text-slate-200 flex items-center gap-1.5">
+          <span>🎨</span> {{ p.name }}
+          <span
+            *ngIf="p.id === 'player-1'"
+            class="text-[10px] bg-blue-500/20 text-blue-400 border border-blue-500/30 px-1.5 py-0.5 rounded-full font-normal"
+            >You</span
+          >
+          <span
+            *ngIf="p.isBot"
+            class="text-[10px] bg-slate-800 text-slate-400 border border-slate-700 px-1.5 py-0.5 rounded-full font-normal"
+            >Bot</span
+          >
+        </span>
+        <span
+          *ngIf="!p.drawingData"
+          class="text-xs text-amber-400 animate-pulse flex items-center gap-1"
+        >
+          <span>✏️</span> drawing...
+        </span>
+        <span *ngIf="p.drawingData" class="text-xs text-emerald-400 flex items-center gap-1">
+          <span>✓</span> Done
+        </span>
+      </div>
+
+      <!-- Canvas Block -->
+      <div
+        class="relative w-full aspect-[8/5] bg-white rounded-xl overflow-hidden shadow-inner flex items-center justify-center border border-slate-800"
+      >
+        <!-- Render Canvas if drawing exists -->
+        <app-canvas
+          *ngIf="p.drawingData"
+          [readOnly]="true"
+          [externalStrokes]="p.drawingData"
+          class="w-full h-full"
+        >
+        </app-canvas>
+
+        <!-- Spinner if drawing is in progress -->
+        <div
+          *ngIf="!p.drawingData"
+          class="flex flex-col items-center justify-center text-slate-400 text-sm space-y-2"
+        >
+          <div
+            class="w-8 h-8 border-4 border-slate-700 border-t-blue-500 rounded-full animate-spin"
+          ></div>
+          <span class="text-xs">Preparing drawing...</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Console: Guess Controls -->
+  <div class="console-panel bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-xl">
+    <!-- Active Guesser Status -->
+    <div class="text-center mb-3">
+      <span class="text-xs uppercase tracking-wider text-slate-500 font-bold block"
+        >Current Guesser</span
+      >
+      <span class="text-base font-extrabold text-indigo-400">
+        {{ activeGuesser?.name }}
+        <span class="text-slate-400 font-normal">({{ isPlayerGuesser ? 'You' : 'Bot' }})</span>
+      </span>
+    </div>
+
+    <!-- Guesser Input Panel -->
+    <div *ngIf="isPlayerGuesser && roomState.phase === 'PLAYING'" class="space-y-4">
+      <div
+        class="p-3 bg-indigo-950/20 border border-indigo-900/50 rounded-xl text-center text-sm text-indigo-300"
+      >
+        🧐 Take a close look at the drawings and type your guess below. You only get one submission!
+      </div>
+      <form (submit)="onSubmitGuess(); $event.preventDefault()" class="flex gap-3">
+        <input
+          type="text"
+          [(ngModel)]="guessText"
+          name="galleryGuess"
+          placeholder="What word are they drawing? Type it here..."
+          class="flex-1 px-4 py-3 rounded-xl bg-slate-850 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+        />
+        <button
+          type="submit"
+          class="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 active:scale-95 transition-all text-white font-bold rounded-xl cursor-pointer"
+        >
+          Submit Guess
+        </button>
+      </form>
+    </div>
+
+    <!-- Non-guesser Waiting Panel -->
+    <div
+      *ngIf="!isPlayerGuesser && roomState.phase === 'PLAYING'"
+      class="text-center p-3 bg-slate-950/40 rounded-xl border border-slate-800 text-slate-400 text-sm"
+    >
+      <span class="animate-pulse"
+        >⏳ Waiting for {{ activeGuesser?.name }} to analyze the drawings and guess the
+        keyword...</span
+      >
+    </div>
+  </div>
+</div>

@@ -1,0 +1,76 @@
+/* Pguess Cartoon Aesthetic Styles */
+
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 10s linear infinite;
+}
+
+/* 3D button pressed effects */
+.play-btn {
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+  transform: translateY(0);
+  transition: all 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.play-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.5), 0 0 15px rgba(34, 197, 94, 0.3);
+}
+
+.play-btn:active {
+  transform: translateY(4px);
+  border-bottom-width: 2px;
+  box-shadow: 0 4px 10px -2px rgba(0, 0, 0, 0.3);
+}
+
+/* Tabs style */
+.tab-active {
+  box-shadow: inset 0 -4px 0 0 rgb(74, 222, 128);
+}
+
+/* Avatar Frame */
+.avatar-frame {
+  box-shadow: inset 0 4px 12px rgba(0, 0, 0, 0.5);
+  transition: all 0.2s ease;
+}
+
+.avatar-frame:hover {
+  box-shadow: inset 0 4px 12px rgba(0, 0, 0, 0.5), 0 0 20px rgba(168, 85, 247, 0.4);
+  border-color: rgb(168, 85, 247);
+}
+
+/* Input styles */
+input[type="text"] {
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6);
+}
+
+/* Pguess logo shield outer glow */
+.logo-shield {
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6), 0 0 25px rgba(168, 85, 247, 0.2);
+}
+
+/* Mini scrollbar configs */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}

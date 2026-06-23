@@ -1,0 +1,106 @@
+<div class="canvas-wrapper relative w-full h-full flex flex-col items-center">
+  <!-- Interactive Canvas Board -->
+  <div
+    class="canvas-container relative w-full flex-1 bg-white rounded-2xl shadow-inner border-2 border-gray-100 overflow-hidden min-h-[300px]"
+  >
+    <canvas
+      #drawingCanvas
+      class="w-full h-full block touch-none object-contain cursor-crosshair"
+      (mousedown)="onMouseDown($event)"
+      (mousemove)="onMouseMove($event)"
+      (mouseup)="onMouseUp()"
+      (mouseleave)="onMouseUp()"
+      (touchstart)="onTouchStart($event)"
+      (touchmove)="onTouchMove($event)"
+      (touchend)="onTouchEnd()"
+    >
+    </canvas>
+  </div>
+
+  <!-- Drawing Toolbar (Only visible when writable) -->
+  <div
+    *ngIf="!readOnly"
+    class="toolbar-panel mt-4 w-full flex flex-wrap gap-4 items-center justify-between p-3 bg-gray-900/95 backdrop-blur-md rounded-2xl border border-gray-800 text-white shadow-xl"
+  >
+    <!-- Color Palette Picker -->
+    <div class="flex flex-wrap gap-2 items-center">
+      <button
+        *ngFor="let col of colors"
+        [style.backgroundColor]="col"
+        (click)="selectColor(col)"
+        [ngClass]="{
+          'ring-4 ring-offset-2 ring-blue-500 scale-110':
+            currentColor === col && selectedTool === 'brush',
+          'hover:scale-105 active:scale-95': true,
+        }"
+        class="w-7 h-7 rounded-full border border-white/20 transition-all cursor-pointer"
+        [title]="col"
+      ></button>
+    </div>
+
+    <!-- Brush & Eraser Tools -->
+    <div class="flex items-center gap-2 bg-gray-800/80 p-1 rounded-xl">
+      <button
+        (click)="setTool('brush')"
+        [ngClass]="{
+          'bg-blue-600 text-white shadow-lg shadow-blue-500/30 font-bold': selectedTool === 'brush',
+          'text-gray-400 hover:text-white': selectedTool !== 'brush',
+        }"
+        class="px-3 py-1.5 rounded-lg text-sm transition-all cursor-pointer flex items-center gap-1"
+      >
+        <span>✏️</span> Brush
+      </button>
+      <button
+        (click)="setTool('eraser')"
+        [ngClass]="{
+          'bg-blue-600 text-white shadow-lg shadow-blue-500/30 font-bold':
+            selectedTool === 'eraser',
+          'text-gray-400 hover:text-white': selectedTool !== 'eraser',
+        }"
+        class="px-3 py-1.5 rounded-lg text-sm transition-all cursor-pointer flex items-center gap-1"
+      >
+        <span>🧹</span> Eraser
+      </button>
+    </div>
+
+    <!-- Brush Size Selector -->
+    <div class="flex items-center gap-1.5 bg-gray-800/80 p-1 rounded-xl">
+      <button
+        *ngFor="let size of brushSizes"
+        (click)="selectWidth(size.value)"
+        [ngClass]="{
+          'bg-gray-700 text-white font-bold': currentWidth === size.value,
+          'text-gray-400 hover:text-white': currentWidth !== size.value,
+        }"
+        class="w-8 h-8 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center justify-center"
+      >
+        {{ size.label }}
+      </button>
+    </div>
+
+    <!-- Canvas Actions (Undo / Redo / Clear) -->
+    <div class="flex items-center gap-2">
+      <button
+        (click)="undo()"
+        class="w-9 h-9 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-200 active:scale-95 transition-all flex items-center justify-center cursor-pointer"
+        title="Undo"
+      >
+        ↩️
+      </button>
+      <button
+        (click)="redo()"
+        class="w-9 h-9 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-200 active:scale-95 transition-all flex items-center justify-center cursor-pointer"
+        title="Redo"
+      >
+        ↪️
+      </button>
+      <button
+        (click)="clearCanvas()"
+        class="w-9 h-9 rounded-xl bg-red-950/80 hover:bg-red-900 border border-red-900/50 text-red-200 active:scale-95 transition-all flex items-center justify-center cursor-pointer"
+        title="Clear Canvas"
+      >
+        🗑️
+      </button>
+    </div>
+  </div>
+</div>
