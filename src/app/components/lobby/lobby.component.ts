@@ -94,8 +94,6 @@ export class LobbyComponent implements OnInit {
   ];
   public activeCarouselIndex = 1; // Default to step 2
 
-  public activeTab: 'anon' | 'auth' = 'anon';
-
   constructor(private gameState: GameStateService) {}
 
   ngOnInit(): void {
@@ -129,9 +127,6 @@ export class LobbyComponent implements OnInit {
     this.activeCarouselIndex = (this.activeCarouselIndex + 1) % this.carouselSteps.length;
   }
 
-  public setTab(tab: 'anon' | 'auth'): void {
-    this.activeTab = tab;
-  }
 
   public onCreateRoom(): void {
     const settings: GameSettings = {
