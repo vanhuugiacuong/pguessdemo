@@ -11,61 +11,69 @@
 
   <!-- Canvases Grid -->
   <div class="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1 overflow-y-auto max-h-[50vh] p-1">
-    <div
-      *ngFor="let p of drawingPlayers"
-      class="gallery-card bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col space-y-3 relative overflow-hidden shadow-md hover:border-slate-700 transition-all"
-    >
-      <!-- Player Tag -->
-      <div class="flex items-center justify-between border-b border-slate-800 pb-2">
-        <span class="font-bold text-sm text-slate-200 flex items-center gap-1.5">
-          <span>🎨</span> {{ p.name }}
-          <span
-            *ngIf="p.id === myPlayerId"
-            class="text-[10px] bg-blue-500/20 text-blue-400 border border-blue-500/30 px-1.5 py-0.5 rounded-full font-normal"
-            >Bạn</span
-          >
-          <span
-            *ngIf="p.isBot"
-            class="text-[10px] bg-slate-800 text-slate-400 border border-slate-700 px-1.5 py-0.5 rounded-full font-normal"
-            >Bot</span
-          >
-        </span>
-        <span
-          *ngIf="!p.drawingData"
-          class="text-xs text-amber-400 animate-pulse flex items-center gap-1"
-        >
-          <span>✏️</span> đang vẽ...
-        </span>
-        <span *ngIf="p.drawingData" class="text-xs text-emerald-400 flex items-center gap-1">
-          <span>✓</span> Xong
-        </span>
-      </div>
-
-      <!-- Canvas Block -->
+    @for (p of drawingPlayers; track p.id) {
       <div
-        class="relative w-full aspect-[8/5] bg-white rounded-xl overflow-hidden shadow-inner flex items-center justify-center border border-slate-800"
+        class="gallery-card bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col space-y-3 relative overflow-hidden shadow-md hover:border-slate-700 transition-all"
       >
-        <!-- Render Canvas if drawing exists -->
-        <app-canvas
-          *ngIf="p.drawingData"
-          [readOnly]="true"
-          [externalStrokes]="p.drawingData"
-          class="w-full h-full"
-        >
-        </app-canvas>
+        <!-- Player Tag -->
+        <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+          <span class="font-bold text-sm text-slate-200 flex items-center gap-1.5">
+            <span>🎨</span> {{ p.name }}
+            @if (p.id === myPlayerId) {
+              <span
+                class="text-[10px] bg-blue-500/20 text-blue-400 border border-blue-500/30 px-1.5 py-0.5 rounded-full font-normal"
+                >Bạn</span
+              >
+            }
+            @if (p.isBot) {
+              <span
+                class="text-[10px] bg-slate-800 text-slate-400 border border-slate-700 px-1.5 py-0.5 rounded-full font-normal"
+                >Bot</span
+              >
+            }
+          </span>
+          @if (!p.drawingData) {
+            <span
+              class="text-xs text-amber-400 animate-pulse flex items-center gap-1"
+            >
+              <span>✏️</span> đang vẽ...
+            </span>
+          }
+          @if (p.drawingData) {
+            <span class="text-xs text-emerald-400 flex items-center gap-1">
+              <span>✓</span> Xong
+            </span>
+          }
+        </div>
 
-        <!-- Spinner if drawing is in progress -->
+        <!-- Canvas Block -->
         <div
-          *ngIf="!p.drawingData"
-          class="flex flex-col items-center justify-center text-slate-400 text-sm space-y-2"
+          class="relative w-full aspect-[8/5] bg-white rounded-xl overflow-hidden shadow-inner flex items-center justify-center border border-slate-800"
         >
-          <div
-            class="w-8 h-8 border-4 border-slate-700 border-t-blue-500 rounded-full animate-spin"
-          ></div>
-          <span class="text-xs">Đang chuẩn bị tranh vẽ...</span>
+          <!-- Render Canvas if drawing exists -->
+          @if (p.drawingData) {
+            <app-canvas
+              [readOnly]="true"
+              [externalStrokes]="p.drawingData"
+              class="w-full h-full"
+            >
+            </app-canvas>
+          }
+
+          <!-- Spinner if drawing is in progress -->
+          @if (!p.drawingData) {
+            <div
+              class="flex flex-col items-center justify-center text-slate-400 text-sm space-y-2"
+            >
+              <div
+                class="w-8 h-8 border-4 border-slate-700 border-t-blue-500 rounded-full animate-spin"
+              ></div>
+              <span class="text-xs">Đang chuẩn bị tranh vẽ...</span>
+            </div>
+          }
         </div>
       </div>
-    </div>
+    }
   </div>
 
   <!-- Bottom Console: Guess Controls -->
@@ -82,37 +90,40 @@
     </div>
 
     <!-- Guesser Input Panel -->
-    <div *ngIf="isPlayerGuesser && roomState.phase === 'PLAYING'" class="space-y-4">
-      <div
-        class="p-3 bg-indigo-950/20 border border-indigo-900/50 rounded-xl text-center text-sm text-indigo-300"
-      >
-        🧐 Quan sát kỹ các bức tranh và nhập dự đoán của bạn bên dưới. Bạn chỉ được đoán một lần!
-      </div>
-      <form (submit)="onSubmitGuess(); $event.preventDefault()" class="flex gap-3">
-        <input
-          type="text"
-          [(ngModel)]="guessText"
-          name="galleryGuess"
-          placeholder="Họ đang vẽ từ gì? Nhập vào đây..."
-          class="flex-1 px-4 py-3 rounded-xl bg-slate-850 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
-        />
-        <button
-          type="submit"
-          class="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 active:scale-95 transition-all text-white font-bold rounded-xl cursor-pointer"
+    @if (isPlayerGuesser && roomState.phase === 'PLAYING') {
+      <div class="space-y-4">
+        <div
+          class="p-3 bg-indigo-950/20 border border-indigo-900/50 rounded-xl text-center text-sm text-indigo-300"
         >
-          Nộp Dự Đoán
-        </button>
-      </form>
-    </div>
+          🧐 Quan sát kỹ các bức tranh và nhập dự đoán của bạn bên dưới. Bạn chỉ được đoán một lần!
+        </div>
+        <form (submit)="onSubmitGuess(); $event.preventDefault()" class="flex gap-3">
+          <input
+            type="text"
+            [(ngModel)]="guessText"
+            name="galleryGuess"
+            placeholder="Họ đang vẽ từ gì? Nhập vào đây..."
+            class="flex-1 px-4 py-3 rounded-xl bg-slate-850 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+          />
+          <button
+            type="submit"
+            class="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 active:scale-95 transition-all text-white font-bold rounded-xl cursor-pointer"
+          >
+            Nộp Dự Đoán
+          </button>
+        </form>
+      </div>
+    }
 
     <!-- Non-guesser Waiting Panel -->
-    <div
-      *ngIf="!isPlayerGuesser && roomState.phase === 'PLAYING'"
-      class="text-center p-3 bg-slate-950/40 rounded-xl border border-slate-800 text-slate-400 text-sm"
-    >
-      <span class="animate-pulse"
-        >⏳ Đang chờ {{ activeGuesser?.name }} phân tích tranh vẽ và đoán từ khóa...</span
+    @if (!isPlayerGuesser && roomState.phase === 'PLAYING') {
+      <div
+        class="text-center p-3 bg-slate-950/40 rounded-xl border border-slate-800 text-slate-400 text-sm"
       >
-    </div>
+        <span class="animate-pulse"
+          >⏳ Đang chờ {{ activeGuesser?.name }} phân tích tranh vẽ và đoán từ khóa...</span
+        >
+      </div>
+    }
   </div>
 </div>

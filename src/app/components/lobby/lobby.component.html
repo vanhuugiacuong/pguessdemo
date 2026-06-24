@@ -214,17 +214,18 @@
 
         <!-- Dot indicators -->
         <div class="flex items-center gap-2.5 justify-center py-1">
-          <span
-            *ngFor="let step of carouselSteps; let idx = index"
-            [ngClass]="{
-              'w-3 h-3 bg-white border-2 border-green-500 ring-4 ring-green-500/25 scale-110':
-                idx === activeCarouselIndex,
-              'w-2 h-2 bg-purple-300/40 hover:bg-purple-200/60': idx !== activeCarouselIndex,
-            }"
-            (click)="activeCarouselIndex = idx"
-            class="rounded-full transition-all cursor-pointer"
-          >
-          </span>
+          @for (step of carouselSteps; track idx; let idx = $index) {
+            <span
+              [ngClass]="{
+                'w-3 h-3 bg-white border-2 border-green-500 ring-4 ring-green-500/25 scale-110':
+                  idx === activeCarouselIndex,
+                'w-2 h-2 bg-purple-300/40 hover:bg-purple-200/60': idx !== activeCarouselIndex,
+              }"
+              (click)="activeCarouselIndex = idx"
+              class="rounded-full transition-all cursor-pointer"
+            >
+            </span>
+          }
         </div>
 
         <!-- Right Arrow -->

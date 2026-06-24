@@ -1,93 +1,7 @@
 <div
-  class="game-container w-full min-h-screen bg-transparent text-white flex flex-col md:flex-row font-sans transition-all duration-300"
+  class="game-container w-full min-h-screen bg-transparent text-white flex flex-col font-sans transition-all duration-300"
   [ngClass]="{ 'gartic-bg-drawing': isPlaying && isUserDrawer }"
 >
-  <!-- Left Side: Leaderboard & Room Controls (Hidden in Lobby and when drawing) -->
-  <div
-    *ngIf="!isLobby && !(isPlaying && isUserDrawer)"
-    class="sidebar w-full md:w-64 bg-slate-900/60 border-b md:border-b-0 md:border-r border-slate-800 p-6 flex flex-col justify-between shrink-0"
-  >
-    <div class="space-y-6">
-      <!-- Title & Room Info -->
-      <div class="flex items-center justify-between">
-        <div>
-          <span class="text-xs uppercase tracking-wider text-slate-500 font-bold block"
-            >MÃ PHÒNG</span
-          >
-          <span class="text-lg font-mono font-extrabold text-blue-400">{{ roomState?.id }}</span>
-        </div>
-        <button
-          (click)="onQuit()"
-          class="px-2.5 py-1 text-xs font-semibold bg-red-950/40 hover:bg-red-900 border border-red-900/50 rounded-lg text-red-200 transition-all cursor-pointer"
-        >
-          Rời phòng
-        </button>
-      </div>
-
-      <!-- Leaderboard -->
-      <div class="space-y-3">
-        <span class="text-xs uppercase tracking-wider text-slate-500 font-bold block"
-          >BẢNG ĐIỂM</span
-        >
-        <div class="space-y-2 max-h-[40vh] md:max-h-none overflow-y-auto pr-1">
-          <div
-            *ngFor="let p of sortedPlayers; let i = index"
-            [ngClass]="{
-              'bg-blue-950/20 border-blue-800/40': p.id === myPlayerId,
-              'bg-slate-900/40 border-slate-800': p.id !== myPlayerId,
-            }"
-            class="flex items-center justify-between p-3 border rounded-xl relative transition-all"
-          >
-            <div class="flex items-center gap-2">
-              <span class="text-xs font-mono font-bold text-slate-500 w-4">#{{ i + 1 }}</span>
-              <div class="flex flex-col">
-                <span
-                  class="font-bold text-sm text-slate-200 truncate max-w-[120px] flex items-center gap-1"
-                >
-                  {{ p.name }}
-                  <span
-                    *ngIf="p.id === myPlayerId"
-                    class="text-[9px] bg-blue-500/20 text-blue-400 border border-blue-500/30 px-1 py-0.2 rounded-full font-normal"
-                    >Bạn</span
-                  >
-                </span>
-                <!-- Action tag status -->
-                <span
-                  class="text-[10px] mt-0.5 flex items-center gap-1 font-semibold"
-                  [ngClass]="{
-                    'text-yellow-400': p.isDrawing,
-                    'text-emerald-400': p.hasGuessedCorrectly,
-                    'text-indigo-400': roomState?.guesserId === p.id,
-                    'text-slate-500':
-                      !p.isDrawing && !p.hasGuessedCorrectly && roomState?.guesserId !== p.id,
-                  }"
-                >
-                  <span *ngIf="p.isDrawing">✏️ Đang vẽ</span>
-                  <span *ngIf="p.hasGuessedCorrectly">💡 Chính xác!</span>
-                  <span *ngIf="roomState?.guesserId === p.id">🕵️ Đang đoán</span>
-                  <span
-                    *ngIf="!p.isDrawing && !p.hasGuessedCorrectly && roomState?.guesserId !== p.id"
-                    >💤 Đang chờ</span
-                  >
-                </span>
-              </div>
-            </div>
-
-            <span class="text-sm font-extrabold text-slate-300 font-mono">{{ p.score }}</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Mode Badge -->
-    <div class="mt-6 pt-4 border-t border-slate-800 hidden md:block">
-      <span class="text-[10px] uppercase font-bold text-slate-500">Chế độ chơi hiện tại</span>
-      <span class="text-xs font-bold text-slate-300 block mt-1">
-        {{ roomState?.guesserId ? 'Phá băng (Chế độ B)' : 'Skribbl Style (Chế độ A)' }}
-      </span>
-    </div>
-  </div>
-
   <div
     [ngClass]="{
       'flex-1 flex flex-col justify-between w-full min-h-0': true,
@@ -98,614 +12,331 @@
     }"
   >
     <!-- 1. LOBBY PHASE -->
-    <div *ngIf="isLobby" class="flex-1 flex flex-col justify-between h-full space-y-4">
-      <!-- Lobby Header -->
-      <div class="flex items-center justify-between w-full mt-2">
-        <button
-          (click)="onQuit()"
-          class="flex items-center gap-1.5 px-4 py-2 border-2 border-white/10 bg-slate-950/40 hover:bg-slate-950 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer hover:border-white/20 active:scale-95 text-slate-200"
-        >
-          <svg lucideArrowLeft class="w-4 h-4"></svg> Quay về
-        </button>
+    @if (isLobby) {
+      <app-room-lobby
+        [roomState]="roomState"
+        [myPlayerId]="myPlayerId"
+        [isHost]="isHost"
+        [selectedGameMode]="selectedGameMode"
+        [currentBotCount]="currentBotCount"
+        [playerSlots]="playerSlots"
+        (changeMode)="changeMode($event)"
+        (changeTimeLimit)="changeTimeLimit($event)"
+        (changeMaxPlayers)="changeMaxPlayers($event)"
+        (changeBotCount)="changeBotCount($event)"
+        (startGame)="onStartGame()"
+        (quit)="onQuit()"
+        (copyInviteLink)="copyInviteLink()"
+        (showQRCode)="showQRCode()"
+        class="flex-1 flex flex-col justify-between h-full space-y-4"
+      ></app-room-lobby>
+    }
 
-        <!-- Center Logo -->
-        <div class="gartic-logo-container flex flex-col items-center rotate-[-1deg] scale-90">
-          <div
-            class="logo-shield bg-slate-950 px-6 py-2 rounded-[2rem] border-[4px] border-slate-900 shadow-2xl flex flex-col items-center relative"
-          >
-            <span class="absolute top-1.5 left-4 text-[10px] animate-pulse">⚡</span>
-            <span class="absolute bottom-1.5 right-4 text-[10px] animate-pulse">✨</span>
-            <span
-              class="text-lg font-black italic tracking-wider text-pink-500 uppercase drop-shadow-[0_2px_0_rgba(0,0,0,1)] leading-none"
-              >P</span
-            >
-            <span
-              class="text-3xl font-black tracking-wide text-white uppercase drop-shadow-[0_4px_0_rgba(0,0,0,1)] leading-none mt-0.5 flex items-center gap-0.5"
-            >
-              Gu<span
-                class="logo-o w-6 h-6 border-[3px] border-dashed border-white rounded-full inline-flex items-center justify-center animate-spin-slow text-base pb-1"
-                >e</span
-              >ss
-            </span>
-          </div>
-        </div>
-
-        <!-- Mute/Sound Toggle -->
-        <button
-          (click)="toggleMute()"
-          class="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-950/40 hover:bg-slate-950 border-2 border-white/10 hover:border-white/20 transition-all cursor-pointer active:scale-95 text-slate-300 hover:text-white"
-        >
-          <svg lucideVolume2 *ngIf="!isMuted" class="w-5 h-5 text-green-400"></svg>
-          <svg lucideVolumeX *ngIf="isMuted" class="w-5 h-5 text-red-400"></svg>
-        </button>
-      </div>
-
-      <!-- Main Room Layout -->
-      <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch flex-1 w-full min-h-0 py-2">
-        <!-- Left Panel: Players List (Col: 5) -->
-        <div
-          class="md:col-span-5 flex flex-col border-4 border-white/10 rounded-2xl overflow-hidden shadow-2xl bg-slate-950/20 backdrop-blur-md"
-        >
-          <div
-            class="bg-slate-950/50 border-b-4 border-white/10 px-4 py-3.5 flex items-center justify-between"
-          >
-            <span class="font-black text-sm uppercase tracking-wider text-green-400">
-              Người chơi {{ roomState?.players?.length }}/{{ roomState?.settings?.maxPlayers || 10 }}
-            </span>
-          </div>
-
-          <div
-            class="p-4 flex-1 flex flex-col gap-2.5 overflow-y-auto max-h-[48dvh] md:max-h-[52dvh] scrollbar-thin"
-          >
-            <ng-container *ngFor="let slot of playerSlots">
-              <!-- Player Slot -->
-              <div
-                *ngIf="roomState && roomState.players[slot] as p"
-                [ngClass]="{
-                  'bg-white text-purple-950 border-purple-300 font-extrabold':
-                    p.id === roomState.players[0].id,
-                  'bg-purple-950/20 text-slate-100 border-purple-900/40 font-bold':
-                    p.id !== roomState.players[0].id,
-                }"
-                class="flex items-center justify-between px-4 py-2.5 rounded-xl border-2 shadow-md transition-all duration-200"
-              >
-                <div class="flex items-center gap-3">
-                  <!-- Avatar frame -->
-                  <div
-                    class="w-10 h-10 rounded-full border-2 border-purple-500 bg-slate-900 flex items-center justify-center p-1 overflow-hidden relative shadow-inner"
-                  >
-                    <img
-                      [src]="'/assets/user-logo/' + (p.avatar || '2.svg')"
-                      alt="Avatar"
-                      class="w-full h-full object-contain"
-                    />
-                  </div>
-                  <div class="flex flex-col">
-                    <span class="text-sm tracking-wide truncate max-w-[150px]">{{ p.name }}</span>
-                    <span
-                      class="text-[9px] font-semibold text-purple-300 uppercase tracking-widest mt-0.5"
-                      *ngIf="p.isBot"
-                      >🤖 BOT</span
-                    >
-                    <span
-                      class="text-[9px] font-semibold text-blue-400 uppercase tracking-widest mt-0.5"
-                      *ngIf="!p.isBot && p.id === myPlayerId"
-                      >👤 Bạn</span
-                    >
-                    <span
-                      class="text-[9px] font-semibold text-green-500 uppercase tracking-widest mt-0.5"
-                      *ngIf="p.id === roomState.players[0].id"
-                      >👑 Chủ phòng</span
-                    >
-                  </div>
-                </div>
-
-                <!-- Star/Crown Badge -->
-                <span *ngIf="p.id === roomState.players[0].id" class="text-base select-none"
-                  >👑</span
-                >
-              </div>
-
-              <!-- Empty Slot -->
-              <div
-                *ngIf="!roomState || slot >= roomState.players.length"
-                class="flex items-center gap-3 px-4 py-2.5 rounded-xl border-2 border-dashed border-white/5 bg-slate-950/10 text-white/20 select-none"
-              >
-                <div
-                  class="w-10 h-10 rounded-full border-2 border-dashed border-white/5 flex items-center justify-center text-xs"
-                >
-                  👤
-                </div>
-                <span class="font-bold text-xs uppercase tracking-widest text-slate-500"
-                  >Trống</span
-                >
-              </div>
-            </ng-container>
-          </div>
-        </div>
-
-        <!-- Right Panel: Presets & Custom Settings (Col: 7) -->
-        <div
-          class="md:col-span-7 flex flex-col border-4 border-white/10 rounded-2xl overflow-hidden shadow-2xl bg-slate-950/20 backdrop-blur-md"
-        >
-          <!-- Tab selector -->
-          <div class="flex border-b-4 border-white/10 bg-slate-950/40 font-bold">
-            <button
-              (click)="activeSettingsTab = 'preset'"
-              [ngClass]="{
-                'bg-purple-600/30 font-black border-r-4 border-white/10 text-green-400':
-                  activeSettingsTab === 'preset',
-                'text-slate-400 hover:text-white': activeSettingsTab !== 'preset',
-              }"
-              class="flex-1 py-3.5 text-xs uppercase tracking-widest transition-all cursor-pointer"
-            >
-              Cài đặt sẵn
-            </button>
-            <button
-              (click)="activeSettingsTab = 'custom'"
-              [ngClass]="{
-                'bg-purple-600/30 font-black border-l-4 border-white/10 text-green-400':
-                  activeSettingsTab === 'custom',
-                'text-slate-400 hover:text-white': activeSettingsTab !== 'custom',
-              }"
-              class="flex-1 py-3.5 text-xs uppercase tracking-widest transition-all cursor-pointer"
-            >
-              Cài đặt tùy chỉnh
-            </button>
-          </div>
-
-          <!-- Tab Content Panel -->
-          <div class="p-6 flex-1 flex flex-col justify-center min-h-[300px]">
-            <!-- 1. PRESETS MODES TAB -->
-            <div *ngIf="activeSettingsTab === 'preset'" class="w-full flex flex-col">
-              <span
-                class="block text-xs font-black tracking-widest text-purple-300 uppercase mb-4 text-center"
-              >
-                Chọn chế độ chơi
-              </span>
-
-              <div class="grid grid-cols-2 gap-4">
-                <!-- Mode A (Thường) -->
-                <div
-                  (click)="isHost && changeMode('A')"
-                  [ngClass]="{
-                    'border-green-400 ring-4 ring-green-400/25 scale-105 bg-purple-950/40':
-                      selectedGameMode === 'A',
-                    'border-white/10 bg-purple-950/15 hover:bg-purple-950/25':
-                      selectedGameMode !== 'A' && isHost,
-                    'border-white/5 bg-purple-950/5 opacity-60 cursor-not-allowed':
-                      selectedGameMode !== 'A' && !isHost,
-                    'cursor-pointer': isHost
-                  }"
-                  class="flex flex-col items-center justify-center p-4 border-4 rounded-2xl transition-all relative group text-center min-h-[170px]"
-                >
-                  <img
-                    src="/assets/mode/11.svg"
-                    alt="Normal Mode"
-                    class="w-16 h-16 object-contain group-hover:scale-105 transition-transform"
-                  />
-                  <span
-                    class="font-black text-sm text-slate-100 uppercase tracking-wider block mt-2"
-                    >THƯỜNG</span
-                  >
-                  <span
-                    class="text-[10px] text-purple-200/70 font-semibold leading-relaxed mt-1.5 max-w-[150px] block"
-                  >
-                    Một người vẽ từ khóa, tất cả người chơi khác cùng đoán.
-                  </span>
-                  <!-- Small active badge icon -->
-                  <div
-                    *ngIf="selectedGameMode === 'A'"
-                    class="absolute -top-2.5 -right-2.5 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center text-xs shadow-md"
-                  >
-                    ⚙️
-                  </div>
-                </div>
-
-                <!-- Mode B (Phá Băng) -->
-                <div
-                  (click)="isHost && changeMode('B')"
-                  [ngClass]="{
-                    'border-green-400 ring-4 ring-green-400/25 scale-105 bg-purple-950/40':
-                      selectedGameMode === 'B',
-                    'border-white/10 bg-purple-950/15 hover:bg-purple-950/25':
-                      selectedGameMode !== 'B' && isHost,
-                    'border-white/5 bg-purple-950/5 opacity-60 cursor-not-allowed':
-                      selectedGameMode !== 'B' && !isHost,
-                    'cursor-pointer': isHost
-                  }"
-                  class="flex flex-col items-center justify-center p-4 border-4 rounded-2xl transition-all relative group text-center min-h-[170px]"
-                >
-                  <img
-                    src="/assets/mode/9.svg"
-                    alt="Ice Breaker"
-                    class="w-16 h-16 object-contain group-hover:scale-105 transition-transform"
-                  />
-                  <span
-                    class="font-black text-sm text-slate-100 uppercase tracking-wider block mt-2"
-                    >PHÁ BĂNG</span
-                  >
-                  <span
-                    class="text-[10px] text-purple-200/70 font-semibold leading-relaxed mt-1.5 max-w-[150px] block"
-                  >
-                    Mọi người vẽ cùng một từ khóa. Một người đoán xem tranh và trả lời.
-                  </span>
-                  <!-- Small active badge icon -->
-                  <div
-                    *ngIf="selectedGameMode === 'B'"
-                    class="absolute -top-2.5 -right-2.5 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center text-xs shadow-md"
-                  >
-                    ⚙️
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- 2. CUSTOM SETTINGS TAB -->
-            <div *ngIf="activeSettingsTab === 'custom'" class="w-full space-y-4">
-              <span
-                class="block text-xs font-black tracking-widest text-purple-300 uppercase mb-2 text-center"
-              >
-                Thiết lập phòng
-              </span>
-
-              <!-- Draw Time Option -->
-              <div
-                class="flex items-center justify-between bg-purple-950/25 p-3 rounded-xl border border-purple-900/40"
-              >
-                <span class="text-xs font-extrabold uppercase tracking-wide text-purple-200"
-                  >Thời gian vẽ</span
-                >
-                <select
-                  [disabled]="!isHost"
-                  [ngModel]="roomState?.timeLeft"
-                  (ngModelChange)="changeTimeLimit($event)"
-                  class="px-3 py-1.5 bg-purple-950/60 border border-purple-800/40 text-xs font-bold text-white rounded-lg focus:outline-none cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
-                >
-                  <option [value]="30" class="bg-purple-950 text-white">30 Giây</option>
-                  <option [value]="60" class="bg-purple-950 text-white">60 Giây</option>
-                  <option [value]="90" class="bg-purple-950 text-white">90 Giây</option>
-                </select>
-              </div>
-
-              <!-- Mode Selection Option -->
-              <div
-                class="flex items-center justify-between bg-purple-950/25 p-3 rounded-xl border border-purple-900/40"
-              >
-                <span class="text-xs font-extrabold uppercase tracking-wide text-purple-200"
-                  >Chế độ chơi</span
-                >
-                <select
-                  [disabled]="!isHost"
-                  [ngModel]="selectedGameMode"
-                  (ngModelChange)="changeMode($event)"
-                  class="px-3 py-1.5 bg-purple-950/60 border border-purple-800/40 text-xs font-bold text-white rounded-lg focus:outline-none cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
-                >
-                  <option value="A" class="bg-purple-950 text-white">Mode A: Skribbl Style</option>
-                  <option value="B" class="bg-purple-950 text-white">
-                    Mode B: Ice Breaker Style
-                  </option>
-                </select>
-              </div>
-
-              <!-- Giới hạn người chơi Option -->
-              <div
-                class="flex items-center justify-between bg-purple-950/25 p-3 rounded-xl border border-purple-900/40"
-              >
-                <span class="text-xs font-extrabold uppercase tracking-wide text-purple-200"
-                  >Giới hạn người chơi</span
-                >
-                <select
-                  [disabled]="!isHost"
-                  [ngModel]="roomState?.settings?.maxPlayers || 10"
-                  (ngModelChange)="changeMaxPlayers($event)"
-                  class="px-3 py-1.5 bg-purple-950/60 border border-purple-800/40 text-xs font-bold text-white rounded-lg focus:outline-none cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
-                >
-                  <option [value]="2" class="bg-purple-950 text-white">2 Người chơi</option>
-                  <option [value]="4" class="bg-purple-950 text-white">4 Người chơi</option>
-                  <option [value]="6" class="bg-purple-950 text-white">6 Người chơi</option>
-                  <option [value]="8" class="bg-purple-950 text-white">8 Người chơi</option>
-                  <option [value]="10" class="bg-purple-950 text-white">10 Người chơi</option>
-                </select>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Bottom controls bar -->
-      <div class="flex items-center justify-between w-full mt-4 pt-4 border-t border-purple-900/20">
-        <div class="flex items-center gap-3">
-          <button
-            (click)="copyInviteLink()"
-            class="flex items-center gap-2 px-5 py-2.5 border-2 border-white/10 hover:border-white/20 bg-slate-950/40 hover:bg-slate-950 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer text-slate-300 hover:text-white active:scale-95"
-          >
-            <svg lucideCopy class="w-4 h-4 text-green-400"></svg> Mời bạn bè
-          </button>
-
-          <button
-            (click)="showQRCode()"
-            class="w-11 h-11 flex items-center justify-center border-2 border-white/10 hover:border-white/20 bg-slate-950/40 hover:bg-slate-950 rounded-xl transition-all cursor-pointer text-slate-300 hover:text-white active:scale-95 shadow-md"
-            title="Hiện mã QR"
-          >
-            <svg lucideQrCode class="w-5 h-5 text-green-400"></svg>
-          </button>
-        </div>
-
-        <button
-          *ngIf="isHost"
-          (click)="onStartGame()"
-          class="play-btn px-10 py-3.5 bg-white hover:bg-slate-100 font-black text-purple-950 text-base rounded-full shadow-2xl active:scale-95 transition-all cursor-pointer flex items-center gap-2 border-b-6 border-purple-300"
-        >
-          <svg lucidePlay class="w-5 h-5 text-green-500 fill-green-500"></svg> BẤT ĐẦU
-        </button>
-        <div
-          *ngIf="!isHost"
-          class="px-6 py-3 bg-purple-950/40 border border-purple-900/30 text-purple-300 font-extrabold text-sm rounded-full tracking-wide shadow-md flex items-center gap-2"
-        >
-          <svg class="animate-spin h-4.5 w-4.5 text-purple-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-          </svg>
-          Đang chờ chủ phòng bắt đầu trò chơi...
-        </div>
-      </div>
-    </div>
     <!-- 2. PLAYING PHASE -->
-    <div *ngIf="isPlaying" class="flex-1 flex flex-col h-full min-h-0 w-full">
-      <!-- User is Drawing: Full Screen Immersive Drawing Layout -->
-      <div
-        *ngIf="isUserDrawer"
-        class="relative flex-1 flex flex-col justify-center items-center w-full h-full min-h-0 py-12 px-6 md:px-16 select-none"
-      >
-        <!-- Drawing Canvas -->
-        <app-canvas
-          [readOnly]="false"
-          class="w-full max-w-6xl h-full flex flex-col justify-center"
-        ></app-canvas>
-      </div>
+    @if (isPlaying) {
+      <div class="flex-1 flex flex-col h-full min-h-0 w-full">
+        <!-- User is Drawing: Full Screen Immersive Drawing Layout -->
+        @if (isUserDrawer) {
+          <div
+            class="relative flex-1 flex flex-col justify-center items-center w-full h-full min-h-0 py-12 px-6 md:px-16 select-none"
+          >
+            <!-- Drawing Canvas -->
+            <app-canvas
+              [readOnly]="false"
+              class="w-full max-w-6xl h-full flex flex-col justify-center"
+            ></app-canvas>
+          </div>
+        }
 
-      <!-- User is Guessing or Spectating: Standard Layout (Sidebar is visible, chat is visible) -->
-      <div *ngIf="!isUserDrawer" class="flex-1 flex flex-col space-y-4 h-full min-h-0">
-        <!-- Game Info Bar -->
-        <div
-          class="flex items-center justify-between p-4 bg-slate-900 border border-slate-800 rounded-2xl shadow-md"
-        >
-          <!-- Round info -->
-          <div class="flex items-center gap-4">
-            <div>
-              <span class="text-[10px] uppercase font-bold text-slate-500">Vòng</span>
-              <span class="text-lg font-extrabold text-slate-200 block"
-                >{{ roomState?.roundNumber }} / {{ roomState?.maxRounds }}</span
+        <!-- User is Guessing or Spectating: Standard Layout (sidebar removed, chat visible) -->
+        @if (!isUserDrawer) {
+          <div class="flex-1 flex flex-col space-y-4 h-full min-h-0">
+            <!-- Game Info Bar -->
+            <div
+              class="flex items-center justify-between p-4 bg-slate-950/40 border-4 border-black rounded-2xl shadow-[4px_4px_0px_rgba(0,0,0,0.3)] backdrop-blur-md"
+            >
+              <!-- Round info -->
+              <div class="flex items-center gap-4">
+                <button
+                  (click)="onQuit()"
+                  class="px-4 py-2 text-xs font-black uppercase tracking-wider bg-red-500 hover:bg-red-400 border-3 border-black rounded-xl text-white shadow-[2px_2px_0px_rgba(0,0,0,1)] active:scale-95 transition-all cursor-pointer mr-2 shrink-0"
+                >
+                  Rời phòng
+                </button>
+                <div>
+                  <span class="text-[10px] uppercase font-black text-purple-300">Vòng</span>
+                  <span class="text-base font-black text-slate-100 block"
+                    >{{ roomState?.roundNumber }} / {{ roomState?.maxRounds }}</span
+                  >
+                </div>
+                <div class="h-8 w-px bg-black/40"></div>
+
+                <!-- Mode A / B instructions -->
+                <div>
+                  <!-- Mode A (Skribbl) Header info -->
+                  @if (!roomState?.guesserId) {
+                    <div>
+                      <div>
+                        <span class="text-[10px] uppercase font-bold text-amber-400 block"
+                          >ĐOÁN TỪ KHÓA:</span
+                        >
+                        <span class="text-lg font-mono font-bold text-white tracking-widest">{{
+                          roomState?.obfuscatedWord
+                        }}</span>
+                      </div>
+                    </div>
+                  }
+
+                  <!-- Mode B (Ice Breaker) Header info -->
+                  @if (roomState?.guesserId) {
+                    <div>
+                      <div>
+                        <span class="text-[10px] uppercase font-bold text-indigo-400 block"
+                          >BẠN ĐANG ĐOÁN:</span
+                        >
+                        <span class="text-base font-bold text-slate-200"
+                          >Hãy quan sát các bức tranh bên dưới!</span
+                        >
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+
+              <!-- Timer circular countdown badge -->
+              <div
+                [ngClass]="{
+                  'bg-emerald-950/20 text-emerald-400 border-emerald-900/50':
+                    (roomState?.timeLeft ?? 0) > 20,
+                  'bg-amber-950/20 text-amber-400 border-amber-900/50':
+                    (roomState?.timeLeft ?? 0) <= 20 && (roomState?.timeLeft ?? 0) > 10,
+                  'bg-red-950/20 text-red-400 border-red-900/50 animate-pulse':
+                    (roomState?.timeLeft ?? 0) <= 10,
+                }"
+                class="px-4 py-2 border rounded-xl flex items-center gap-1.5 font-mono font-bold text-sm"
               >
+                <span>⏰</span>
+                <span>{{ roomState?.timeLeft }}s</span>
+              </div>
             </div>
-            <div class="h-8 w-px bg-slate-800"></div>
 
-            <!-- Mode A / B instructions -->
-            <div>
-              <!-- Mode A (Skribbl) Header info -->
-              <div *ngIf="!roomState?.guesserId">
-                <div>
-                  <span class="text-[10px] uppercase font-bold text-amber-400 block"
-                    >ĐOÁN TỪ KHÓA:</span
-                  >
-                  <span class="text-lg font-mono font-bold text-white tracking-widest">{{
-                    roomState?.obfuscatedWord
-                  }}</span>
+            <!-- Play Content Box -->
+            <div class="flex-1 flex flex-col h-full min-h-0">
+              <!-- Mode A content -->
+              @if (!roomState?.guesserId) {
+                <div class="flex-1 grid grid-cols-1 lg:grid-cols-5 gap-6 h-full min-h-0">
+                  <!-- Bot is Drawing -->
+                  <div class="lg:col-span-3 h-full flex flex-col justify-center">
+                    <div class="mb-2 text-sm text-slate-400 italic">
+                      ✏️ <strong>{{ currentDrawerPlayer?.name }}</strong> đang vẽ...
+                    </div>
+                    <app-canvas
+                      [readOnly]="true"
+                      [streamRealTime]="true"
+                      class="w-full h-full flex-1"
+                    ></app-canvas>
+                  </div>
+
+                  <!-- Chat log guesses (right) -->
+                  <div class="lg:col-span-2 h-full min-h-[300px] lg:min-h-0">
+                    <app-chat class="h-full"></app-chat>
+                  </div>
                 </div>
-              </div>
+              }
 
-              <!-- Mode B (Ice Breaker) Header info -->
-              <div *ngIf="roomState?.guesserId">
-                <div>
-                  <span class="text-[10px] uppercase font-bold text-indigo-400 block"
-                    >BẠN ĐANG ĐOÁN:</span
-                  >
-                  <span class="text-base font-bold text-slate-200"
-                    >Hãy quan sát các bức tranh bên dưới!</span
-                  >
+              <!-- Mode B content -->
+              @if (roomState?.guesserId) {
+                <div class="flex-1 h-full min-h-0">
+                  <!-- User is guesser -->
+                  <app-gallery-reveal [roomState]="roomState!" class="w-full h-full"></app-gallery-reveal>
                 </div>
-              </div>
+              }
             </div>
           </div>
-
-          <!-- Timer circular countdown badge -->
-          <div
-            [ngClass]="{
-              'bg-emerald-950/20 text-emerald-400 border-emerald-900/50':
-                (roomState?.timeLeft ?? 0) > 20,
-              'bg-amber-950/20 text-amber-400 border-amber-900/50':
-                (roomState?.timeLeft ?? 0) <= 20 && (roomState?.timeLeft ?? 0) > 10,
-              'bg-red-950/20 text-red-400 border-red-900/50 animate-pulse':
-                (roomState?.timeLeft ?? 0) <= 10,
-            }"
-            class="px-4 py-2 border rounded-xl flex items-center gap-1.5 font-mono font-bold text-sm"
-          >
-            <span>⏰</span>
-            <span>{{ roomState?.timeLeft }}s</span>
-          </div>
-        </div>
-
-        <!-- Play Content Box -->
-        <div class="flex-1 flex flex-col h-full min-h-0">
-          <!-- Mode A content -->
-          <div
-            *ngIf="!roomState?.guesserId"
-            class="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6 h-full min-h-0"
-          >
-            <!-- Bot is Drawing -->
-            <div class="lg:col-span-2 h-full flex flex-col justify-center">
-              <div class="mb-2 text-sm text-slate-400 italic">
-                ✏️ <strong>{{ currentDrawerPlayer?.name }}</strong> đang vẽ...
-              </div>
-              <app-canvas
-                [readOnly]="true"
-                [streamRealTime]="true"
-                class="w-full h-full flex-1"
-              ></app-canvas>
-            </div>
-
-            <!-- Chat log guesses (right) -->
-            <div class="h-full min-h-[300px] lg:min-h-0">
-              <app-chat class="h-full"></app-chat>
-            </div>
-          </div>
-
-          <!-- Mode B content -->
-          <div *ngIf="roomState?.guesserId" class="flex-1 h-full min-h-0">
-            <!-- User is guesser -->
-            <app-gallery-reveal [roomState]="roomState!" class="w-full h-full"></app-gallery-reveal>
-          </div>
-        </div>
+        }
       </div>
-    </div>
+    }
 
     <!-- 3. REVEAL / SCOREBOARD BREAK PHASE -->
-    <div
-      *ngIf="isReveal"
-      class="flex-1 flex flex-col items-center justify-center max-w-2xl mx-auto space-y-6 w-full py-6"
-    >
-      <div class="text-center space-y-2">
-        <span class="text-xs uppercase tracking-wider text-slate-500 font-bold block"
-          >Vòng chơi kết thúc</span
-        >
-        <h2 class="text-3xl font-extrabold text-yellow-400">
-          Từ khóa là: "{{ roomState?.currentWord }}"
-        </h2>
-        <span class="text-sm text-slate-400 block mt-1"
-          >Vòng tiếp theo bắt đầu sau {{ roomState?.timeLeft }} giây...</span
-        >
-      </div>
-
-      <!-- Mode A Reveal -->
+    @if (isReveal) {
       <div
-        *ngIf="!roomState?.guesserId"
-        class="w-full bg-slate-900 border border-slate-800 rounded-3xl p-6 space-y-4 shadow-xl"
+        class="flex-1 flex flex-col items-center justify-center max-w-5xl mx-auto space-y-6 w-full py-6"
       >
-        <div class="text-center border-b border-slate-800 pb-3 text-sm text-slate-300">
-          🖼️ Tranh vẽ bởi: <strong>{{ currentDrawerPlayer?.name }}</strong>
-        </div>
-        <!-- Show complete canvas -->
-        <div
-          class="w-full aspect-[8/5] bg-white rounded-2xl overflow-hidden border border-slate-800"
-        >
-          <app-canvas [readOnly]="true" [streamRealTime]="true" class="w-full h-full"></app-canvas>
-        </div>
-      </div>
-
-      <!-- Mode B Reveal -->
-      <div *ngIf="roomState?.guesserId" class="w-full space-y-4">
-        <div
-          class="p-3 bg-indigo-950/20 border border-indigo-900/50 rounded-xl text-center text-sm text-indigo-300"
-        >
-          🔍 Người đoán <strong>{{ activeGuesser?.name }}</strong> đã nộp câu trả lời. Dưới đây là
-          tất cả các tranh vẽ:
-        </div>
-        <!-- Grid of completed canvases -->
-        <div class="grid grid-cols-2 gap-4 max-h-[45vh] overflow-y-auto p-1">
-          <div
-            *ngFor="let p of drawingPlayers"
-            class="bg-slate-900 border border-slate-800 p-3 rounded-2xl flex flex-col space-y-2"
+        <!-- Nút Rời phòng khi chờ -->
+        <div class="w-full flex justify-start">
+          <button
+            (click)="onQuit()"
+            class="px-4 py-2 text-xs font-black uppercase tracking-wider bg-red-500 hover:bg-red-400 border-3 border-black rounded-xl text-white shadow-[2px_2px_0px_rgba(0,0,0,1)] active:scale-95 transition-all cursor-pointer shrink-0"
           >
-            <span class="text-xs font-bold text-slate-300 flex items-center justify-between">
-              <span>👤 {{ p.name }}</span>
-              <span class="text-[10px] bg-slate-800 text-slate-400 px-1 py-0.5 rounded"
-                >Họa sĩ</span
-              >
-            </span>
-            <div class="w-full aspect-[8/5] bg-white rounded-xl overflow-hidden">
-              <app-canvas
-                *ngIf="p.drawingData"
-                [readOnly]="true"
-                [externalStrokes]="p.drawingData"
-                class="w-full h-full"
-              ></app-canvas>
+            Rời phòng
+          </button>
+        </div>
+
+        <div class="text-center space-y-2">
+          <span class="text-xs uppercase tracking-wider text-slate-500 font-bold block"
+            >Vòng chơi kết thúc</span
+          >
+          <h2 class="text-3xl font-extrabold text-yellow-400">
+            Từ khóa là: "{{ roomState?.currentWord }}"
+          </h2>
+          <span class="text-sm text-slate-400 block mt-1"
+            >Vòng tiếp theo bắt đầu sau {{ roomState?.timeLeft }} giây...</span
+          >
+        </div>
+
+        <!-- Mode A Reveal -->
+        @if (!roomState?.guesserId) {
+          <div
+            class="w-full bg-slate-900 border border-slate-800 rounded-3xl p-6 space-y-4 shadow-xl"
+          >
+            <div class="text-center border-b border-slate-800 pb-3 text-sm text-slate-300">
+              🖼️ Tranh vẽ bởi: <strong>{{ currentDrawerPlayer?.name }}</strong>
+            </div>
+            <!-- Show complete canvas -->
+            <div
+              class="w-full aspect-[8/5] bg-white rounded-2xl overflow-hidden border border-slate-800"
+            >
+              <app-canvas [readOnly]="true" [streamRealTime]="true" class="w-full h-full"></app-canvas>
             </div>
           </div>
-        </div>
+        }
+
+        <!-- Mode B Reveal -->
+        @if (roomState?.guesserId) {
+          <div class="w-full space-y-4">
+            <div
+              class="p-3 bg-indigo-950/20 border border-indigo-900/50 rounded-xl text-center text-sm text-indigo-300"
+            >
+              🔍 Người đoán <strong>{{ activeGuesser?.name }}</strong> đã nộp câu trả lời. Dưới đây là
+              tất cả các tranh vẽ:
+            </div>
+            <!-- Grid of completed canvases -->
+            <div class="grid grid-cols-2 gap-4 max-h-[45vh] overflow-y-auto p-1">
+              @for (p of drawingPlayers; track p.id) {
+                <div
+                  class="bg-slate-900 border border-slate-800 p-3 rounded-2xl flex flex-col space-y-2"
+                >
+                  <span class="text-xs font-bold text-slate-300 flex items-center justify-between">
+                    <span>👤 {{ p.name }}</span>
+                    <span class="text-[10px] bg-slate-800 text-slate-400 px-1 py-0.5 rounded"
+                      >Họa sĩ</span
+                    >
+                  </span>
+                  <div class="w-full aspect-[8/5] bg-white rounded-xl overflow-hidden">
+                    @if (p.drawingData) {
+                      <app-canvas
+                        [readOnly]="true"
+                        [externalStrokes]="p.drawingData"
+                        class="w-full h-full"
+                      ></app-canvas>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        }
       </div>
-    </div>
+    }
 
     <!-- 4. GAME OVER PODIUM -->
-    <div
-      *ngIf="isGameOver"
-      class="flex-1 flex flex-col items-center justify-center max-w-xl mx-auto space-y-8 py-10 w-full"
-    >
-      <div class="text-center space-y-2">
-        <span class="text-4xl">🏆</span>
-        <h2 class="text-3xl font-extrabold text-slate-100">Trò chơi kết thúc!</h2>
-        <p class="text-slate-400 text-sm">
-          Dưới đây là bảng xếp hạng chung cuộc. Chúc mừng tất cả mọi người!
-        </p>
-      </div>
-
-      <!-- Podium display (Top 3) -->
+    @if (isGameOver) {
       <div
-        class="w-full flex items-end justify-center gap-4 border-b border-slate-800 pb-6 pt-4 h-48"
+        class="flex-1 flex flex-col items-center justify-center max-w-4xl mx-auto space-y-8 py-10 w-full"
       >
-        <!-- 2nd place -->
-        <div *ngIf="sortedPlayers.length > 1" class="flex flex-col items-center w-24">
-          <span class="text-xs font-bold text-slate-400 truncate max-w-full text-center">{{
-            sortedPlayers[1].name
-          }}</span>
-          <span class="text-xs font-mono text-slate-500">{{ sortedPlayers[1].score }} pts</span>
-          <div
-            class="w-full h-24 mt-2 bg-slate-800 border-t-2 border-slate-700 rounded-t-xl flex items-center justify-center font-extrabold text-slate-400 text-2xl"
+        <!-- Nút Rời phòng khi kết thúc game -->
+        <div class="w-full flex justify-start">
+          <button
+            (click)="onQuit()"
+            class="px-4 py-2 text-xs font-black uppercase tracking-wider bg-red-500 hover:bg-red-400 border-3 border-black rounded-xl text-white shadow-[2px_2px_0px_rgba(0,0,0,1)] active:scale-95 transition-all cursor-pointer shrink-0"
           >
-            2
-          </div>
+            Rời phòng
+          </button>
         </div>
 
-        <!-- 1st place -->
-        <div *ngIf="sortedPlayers.length > 0" class="flex flex-col items-center w-28 scale-105">
-          <span class="text-sm font-black text-yellow-400 truncate max-w-full text-center"
-            >👑 {{ sortedPlayers[0].name }}</span
-          >
-          <span class="text-xs font-mono text-yellow-500 font-bold"
-            >{{ sortedPlayers[0].score }} pts</span
-          >
-          <div
-            class="w-full h-32 mt-2 bg-yellow-950/40 border-t-4 border-yellow-500 rounded-t-xl flex items-center justify-center font-black text-yellow-400 text-3xl"
-          >
-            1
-          </div>
+        <div class="text-center space-y-2">
+          <span class="text-4xl">🏆</span>
+          <h2 class="text-3xl font-extrabold text-slate-100">Trò chơi kết thúc!</h2>
+          <p class="text-slate-400 text-sm">
+            Dưới đây là bảng xếp hạng chung cuộc. Chúc mừng tất cả mọi người!
+          </p>
         </div>
 
-        <!-- 3rd place -->
-        <div *ngIf="sortedPlayers.length > 2" class="flex flex-col items-center w-24">
-          <span class="text-xs font-bold text-amber-600 truncate max-w-full text-center">{{
-            sortedPlayers[2].name
-          }}</span>
-          <span class="text-xs font-mono text-amber-700">{{ sortedPlayers[2].score }} pts</span>
-          <div
-            class="w-full h-16 mt-2 bg-slate-900 border-t border-slate-800 rounded-t-xl flex items-center justify-center font-extrabold text-amber-700 text-xl"
-          >
-            3
-          </div>
-        </div>
-      </div>
-
-      <!-- Rest of players scores list -->
-      <div class="w-full space-y-2">
+        <!-- Podium display (Top 3) -->
         <div
-          *ngFor="let p of sortedPlayers | slice: 3; let j = index"
-          class="flex items-center justify-between p-3 bg-slate-900/50 border border-slate-850 rounded-xl text-sm"
+          class="w-full flex items-end justify-center gap-4 border-b border-slate-800 pb-6 pt-4 h-48"
         >
-          <span class="text-slate-400 font-semibold flex items-center gap-2">
-            <span>#{{ j + 4 }}</span>
-            <span>{{ p.name }}</span>
-          </span>
-          <span class="font-mono text-slate-400">{{ p.score }} pts</span>
-        </div>
-      </div>
+          <!-- 2nd place -->
+          @if (sortedPlayers.length > 1) {
+            <div class="flex flex-col items-center w-24">
+              <span class="text-xs font-bold text-slate-400 truncate max-w-full text-center">{{
+                sortedPlayers[1].name
+              }}</span>
+              <span class="text-xs font-mono text-slate-500">{{ sortedPlayers[1].score }} pts</span>
+              <div
+                class="w-full h-24 mt-2 bg-slate-800 border-t-2 border-slate-700 rounded-t-xl flex items-center justify-center font-extrabold text-slate-400 text-2xl"
+              >
+                2
+              </div>
+            </div>
+          }
 
-      <!-- Restart/Lobby buttons -->
-      <button
-        (click)="onQuit()"
-        class="w-full py-4 bg-blue-600 hover:bg-blue-500 font-bold rounded-2xl shadow-xl shadow-blue-950/50 transition-all cursor-pointer"
-      >
-        🔄 QUAY VỀ PHÒNG CHỜ
-      </button>
-    </div>
+          <!-- 1st place -->
+          @if (sortedPlayers.length > 0) {
+            <div class="flex flex-col items-center w-28 scale-105">
+              <span class="text-sm font-black text-yellow-400 truncate max-w-full text-center"
+                >👑 {{ sortedPlayers[0].name }}</span
+              >
+              <span class="text-xs font-mono text-yellow-500 font-bold"
+                >{{ sortedPlayers[0].score }} pts</span
+              >
+              <div
+                class="w-full h-32 mt-2 bg-yellow-950/40 border-t-4 border-yellow-500 rounded-t-xl flex items-center justify-center font-black text-yellow-400 text-3xl"
+              >
+                1
+              </div>
+            </div>
+          }
+
+          <!-- 3rd place -->
+          @if (sortedPlayers.length > 2) {
+            <div class="flex flex-col items-center w-24">
+              <span class="text-xs font-bold text-amber-600 truncate max-w-full text-center">{{
+                sortedPlayers[2].name
+              }}</span>
+              <span class="text-xs font-mono text-amber-700">{{ sortedPlayers[2].score }} pts</span>
+              <div
+                class="w-full h-16 mt-2 bg-slate-900 border-t border-slate-800 rounded-t-xl flex items-center justify-center font-extrabold text-amber-700 text-xl"
+              >
+                3
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Rest of players scores list -->
+        <div class="w-full space-y-2">
+          @for (p of sortedPlayers | slice: 3; track p.id; let j = $index) {
+            <div
+              class="flex items-center justify-between p-3 bg-slate-900/50 border border-slate-850 rounded-xl text-sm"
+            >
+              <span class="text-slate-400 font-semibold flex items-center gap-2">
+                <span>#{{ j + 4 }}</span>
+                <span>{{ p.name }}</span>
+              </span>
+              <span class="font-mono text-slate-400">{{ p.score }} pts</span>
+            </div>
+          }
+        </div>
+
+        <!-- Restart/Lobby buttons -->
+        <button
+          (click)="onQuit()"
+          class="w-full py-4 bg-blue-600 hover:bg-blue-500 font-bold rounded-2xl shadow-xl shadow-blue-950/50 transition-all cursor-pointer"
+        >
+          🔄 QUAY VỀ PHÒNG CHỜ
+        </button>
+      </div>
+    }
   </div>
 </div>

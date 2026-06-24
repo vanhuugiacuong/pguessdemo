@@ -1,66 +1,104 @@
 <div
-  class="chat-panel w-full h-full flex flex-col bg-slate-900/70 border border-slate-800 rounded-2xl overflow-hidden shadow-lg"
+  class="chat-panel w-full h-full flex flex-col bg-slate-950/40 border-4 border-black rounded-3xl overflow-hidden shadow-[8px_8px_0px_rgba(0,0,0,0.3)] backdrop-blur-md"
 >
   <!-- Header Title -->
-  <div class="px-4 py-3 bg-slate-800 border-b border-slate-700 flex items-center justify-between">
-    <span class="text-sm font-semibold text-slate-300 flex items-center gap-1.5">
-      <span>💬</span> Trò chuyện & Dự đoán
+  <div class="px-4 py-3 bg-purple-950/80 border-b-4 border-black flex items-center justify-between font-black text-white">
+    <span class="text-xs uppercase tracking-widest flex items-center gap-1.5">
+      <span>💬</span> TRÒ CHUYỆN & DỰ ĐOÁN
     </span>
-    <span class="text-xs text-slate-400 font-mono">{{ messages.length }} tin nhắn</span>
+    <span class="text-[10px] bg-black/40 px-2 py-0.5 rounded-full font-mono text-purple-300">{{ messages.length }} tin nhắn</span>
   </div>
 
   <!-- Messages List -->
   <div
     #chatScrollContainer
-    class="flex-1 p-4 overflow-y-auto space-y-3 scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-transparent"
+    class="flex-1 p-4 overflow-y-auto space-y-4 scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-transparent"
   >
-    <div
-      *ngFor="let msg of messages"
-      [ngClass]="{
-        'bg-slate-950/40 border-l-4 border-slate-700': !msg.isSystem && !msg.isCorrectGuess,
-        'bg-emerald-950/20 text-emerald-400 border border-emerald-900/50 rounded-xl':
-          msg.isSystem &&
-          !msg.isCorrectGuess &&
-          !msg.text.includes('Game Over') &&
-          !msg.text.includes('winner'),
-        'bg-yellow-950/30 text-yellow-300 border border-yellow-900/50 rounded-xl font-bold':
-          msg.isCorrectGuess || msg.text.includes('Guessed'),
-        'bg-gradient-to-r from-purple-950/40 to-indigo-950/40 border border-indigo-900/50 text-indigo-200 rounded-xl text-center font-bold p-2':
-          msg.text.includes('Game Over') || msg.text.includes('winner'),
-      }"
-      class="p-2.5 rounded-lg text-sm leading-relaxed transition-all"
-    >
-      <!-- System Message -->
-      <div
-        *ngIf="msg.isSystem && !msg.isCorrectGuess"
-        class="flex items-center gap-1.5 justify-center"
-      >
-        <span>📢</span>
-        <span>{{ msg.text }}</span>
-      </div>
-
-      <!-- Correct Guess Notice -->
-      <div *ngIf="msg.isCorrectGuess" class="flex items-center gap-1.5">
-        <span>🌟</span>
-        <span
-          ><strong>{{ msg.playerName }}</strong> {{ msg.text }}</span
+    @for (msg of messages; track msg.id) {
+      <!-- Case 1: Standard System Announcement (Turn starts, players left, etc.) -->
+      @if (msg.isSystem && !msg.isCorrectGuess && !msg.text.includes('Game Over') && !msg.text.includes('winner') && !msg.text.includes('chiến thắng')) {
+        <div
+          class="flex justify-center w-full my-1.5"
         >
-      </div>
+          <div class="bg-indigo-950/65 text-indigo-200 border-2 border-indigo-700/60 px-4 py-1.5 rounded-2xl text-xs font-bold shadow-[2px_2px_0px_rgba(0,0,0,0.15)] text-center max-w-[85%] flex items-center gap-1.5">
+            <span>📢</span>
+            <span>{{ msg.text }}</span>
+          </div>
+        </div>
+      }
 
-      <!-- Normal Guess Message -->
-      <div *ngIf="!msg.isSystem && !msg.isCorrectGuess" class="flex items-baseline gap-2">
-        <span class="font-extrabold text-blue-400 truncate max-w-[120px]"
-          >{{ msg.playerName }}:</span
+      <!-- Case 2: Game Over / Winner Banner -->
+      @if (msg.isSystem && (msg.text.includes('Game Over') || msg.text.includes('winner') || msg.text.includes('chiến thắng'))) {
+        <div
+          class="flex justify-center w-full my-3"
         >
-        <span class="text-slate-200 break-all">{{ msg.text }}</span>
-      </div>
-    </div>
+          <div class="bg-gradient-to-r from-yellow-400 to-amber-500 text-purple-950 border-4 border-black px-6 py-3 rounded-2xl font-black text-xs md:text-sm shadow-[4px_4px_0px_rgba(0,0,0,1)] text-center max-w-[90%] flex items-center gap-2">
+            <span>🏆</span>
+            <span>{{ msg.text }}</span>
+          </div>
+        </div>
+      }
+
+      <!-- Case 3: Correct Guess Banner -->
+      @if (msg.isCorrectGuess) {
+        <div
+          class="flex justify-center w-full my-2 animate-bounce-short"
+        >
+          <div class="bg-green-500 text-purple-950 border-3 border-black px-4 py-2 rounded-2xl font-black text-xs shadow-[3px_3px_0px_rgba(0,0,0,1)] flex items-center gap-2">
+            <span>🌟</span>
+            <span><strong>{{ msg.playerName }}</strong> {{ msg.text }}</span>
+          </div>
+        </div>
+      }
+
+      <!-- Case 4: Normal Chat Message (Current User / You) -->
+      @if (!msg.isSystem && !msg.isCorrectGuess && msg.playerId === myPlayerId) {
+        <div
+          class="flex items-start gap-3 justify-end"
+        >
+          <!-- Bubble -->
+          <div class="relative max-w-[70%] text-right flex flex-col items-end">
+            <!-- Player Name -->
+            <span class="block text-[10px] font-black uppercase text-amber-300 mb-1 mr-1 tracking-wider">Bạn</span>
+            <!-- Bubble Content -->
+            <div class="bg-amber-100 text-slate-950 px-4 py-2 border-3 border-black rounded-2xl rounded-tr-none shadow-[3px_3px_0px_rgba(0,0,0,1)] relative text-left">
+              <p class="text-sm font-extrabold leading-normal">{{ msg.text }}</p>
+            </div>
+          </div>
+          <!-- Avatar -->
+          <div class="w-9 h-9 rounded-full border-3 border-black bg-amber-300 flex items-center justify-center p-0.5 overflow-hidden shadow-[2px_2px_0px_rgba(0,0,0,1)] shrink-0 mt-4">
+            <img [src]="'/assets/user-logo/' + getPlayerAvatar(msg.playerId)" alt="Avatar" class="w-full h-full object-contain" />
+          </div>
+        </div>
+      }
+
+      <!-- Case 5: Normal Chat Message (Other User) -->
+      @if (!msg.isSystem && !msg.isCorrectGuess && msg.playerId !== myPlayerId) {
+        <div
+          class="flex items-start gap-3 justify-start"
+        >
+          <!-- Avatar -->
+          <div class="w-9 h-9 rounded-full border-3 border-black bg-purple-300 flex items-center justify-center p-0.5 overflow-hidden shadow-[2px_2px_0px_rgba(0,0,0,1)] shrink-0 mt-4">
+            <img [src]="'/assets/user-logo/' + getPlayerAvatar(msg.playerId)" alt="Avatar" class="w-full h-full object-contain" />
+          </div>
+          <!-- Bubble -->
+          <div class="relative max-w-[70%] flex flex-col items-start">
+            <!-- Player Name -->
+            <span class="block text-[10px] font-black uppercase text-purple-300 mb-1 ml-1 tracking-wider">{{ msg.playerName }}</span>
+            <!-- Bubble Content -->
+            <div class="bg-white text-slate-950 px-4 py-2 border-3 border-black rounded-2xl rounded-tl-none shadow-[3px_3px_0px_rgba(0,0,0,1)] relative text-left">
+              <p class="text-sm font-extrabold leading-normal">{{ msg.text }}</p>
+            </div>
+          </div>
+        </div>
+      }
+    }
   </div>
 
   <!-- Guess Form -->
   <form
     (submit)="onSend(); $event.preventDefault()"
-    class="p-3 bg-slate-800 border-t border-slate-700 flex gap-2"
+    class="p-4 bg-slate-950/60 border-t-4 border-black flex gap-3 items-center"
   >
     <input
       type="text"
@@ -68,11 +106,11 @@
       name="guessInput"
       placeholder="Nhập dự đoán của bạn..."
       autocomplete="off"
-      class="flex-1 px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all text-sm"
+      class="flex-1 px-4 py-3 rounded-xl bg-purple-950/40 border-3 border-black text-white placeholder-purple-300/30 focus:outline-none focus:border-green-500 font-bold transition-all text-sm shadow-inner"
     />
     <button
       type="submit"
-      class="px-4 py-2 bg-blue-600 hover:bg-blue-500 active:scale-95 transition-all text-white text-sm font-semibold rounded-xl cursor-pointer"
+      class="px-6 py-3 bg-green-500 hover:bg-green-400 active:scale-95 transition-all text-white text-xs font-black uppercase tracking-wider rounded-xl border-3 border-black shadow-[2px_2px_0px_rgba(0,0,0,1)] cursor-pointer"
     >
       Đoán
     </button>

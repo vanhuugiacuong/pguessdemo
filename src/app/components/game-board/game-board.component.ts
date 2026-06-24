@@ -7,14 +7,7 @@ import { Subscription } from 'rxjs';
 import { CanvasComponent } from '../canvas/canvas.component';
 import { ChatComponent } from '../chat/chat.component';
 import { GalleryRevealComponent } from '../gallery-reveal/gallery-reveal.component';
-import {
-  LucidePlay,
-  LucideVolume2,
-  LucideVolumeX,
-  LucideCopy,
-  LucideQrCode,
-  LucideArrowLeft
-} from '@lucide/angular';
+import { RoomLobbyComponent } from '../room-lobby/room-lobby.component';
 
 @Component({
   selector: 'app-game-board',
@@ -25,12 +18,7 @@ import {
     CanvasComponent,
     ChatComponent,
     GalleryRevealComponent,
-    LucidePlay,
-    LucideVolume2,
-    LucideVolumeX,
-    LucideCopy,
-    LucideQrCode,
-    LucideArrowLeft
+    RoomLobbyComponent
   ],
   templateUrl: './game-board.component.html',
   styleUrl: './game-board.component.css',

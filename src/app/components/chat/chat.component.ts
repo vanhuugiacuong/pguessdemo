@@ -9,7 +9,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { GameStateService } from '../../services/game-state.service';
-import { ChatMessage } from '../../models/game.model';
+import { ChatMessage, Player } from '../../models/game.model';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -24,7 +24,9 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   public messages: ChatMessage[] = [];
   public currentGuess = '';
+  public players: Player[] = [];
   private subscription!: Subscription;
+  private roomStateSubscription!: Subscription;
   private shouldScroll = true;
 
   constructor(private gameState: GameStateService) {}
@@ -33,6 +35,12 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.subscription = this.gameState.chatMessages$.subscribe((msgs) => {
       this.messages = msgs;
       this.shouldScroll = true;
+    });
+
+    this.roomStateSubscription = this.gameState.roomState$.subscribe((state) => {
+      if (state) {
+        this.players = state.players;
+      }
     });
   }
 
@@ -47,6 +55,18 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     if (this.subscription) {
       this.subscription.unsubscribe();
     }
+    if (this.roomStateSubscription) {
+      this.roomStateSubscription.unsubscribe();
+    }
+  }
+
+  public get myPlayerId(): string | null {
+    return this.gameState.getMyPlayerId();
+  }
+
+  public getPlayerAvatar(playerId: string): string {
+    const player = this.players.find((p) => p.id === playerId);
+    return player?.avatar || '2.svg';
   }
 
   public onSend(): void {
