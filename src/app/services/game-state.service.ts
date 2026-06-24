@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import { RoomState, ChatMessage, DrawStroke, GameSettings } from '../models/game.model';
 import { MockServerService } from './mock-server.service';
@@ -19,7 +20,8 @@ export class GameStateService {
 
   constructor(
     private mockServer: MockServerService,
-    private socketService: SocketService
+    private socketService: SocketService,
+    private router: Router
   ) {
     this.roomState$ = this.socketService.roomState$;
     this.chatMessages$ = this.socketService.chatMessages$;
@@ -28,6 +30,17 @@ export class GameStateService {
 
     this.roomState$.subscribe((state) => {
       this.currentRoomId = state ? state.id : null;
+      if (state) {
+        const currentUrl = this.router.url;
+        if (!currentUrl.includes(`/lobby/${state.id}`)) {
+          this.router.navigate(['/lobby', state.id]);
+        }
+      } else {
+        const currentUrl = this.router.url;
+        if (currentUrl.includes('/lobby/')) {
+          this.router.navigate(['/']);
+        }
+      }
     });
   }
 

@@ -46,6 +46,7 @@ export class LobbyComponent implements OnInit {
   public drawTimeLimit = 60;
   public wordCategory = 'General';
   public roomIdToJoin = '';
+  public isDirectJoin = false;
 
   // Avatars list from assets
   public avatars: string[] = ['2.svg', '30.svg', '33.svg', '34.svg', '39.svg', '52.svg', '58.svg'];
@@ -105,8 +106,6 @@ export class LobbyComponent implements OnInit {
     const funnyNames = [
       'GamerPro',
       'DoodleKing',
-      'SketchyCat',
-      'PixelWizard',
       'NeoPainter',
       'CuongDzai',
     ];
@@ -118,6 +117,22 @@ export class LobbyComponent implements OnInit {
         this.roomIdToJoin = params['room'];
       }
     });
+
+    this.route.params.subscribe((params) => {
+      if (params['roomId']) {
+        this.roomIdToJoin = params['roomId'];
+        this.isDirectJoin = true;
+      }
+    });
+
+    if (this.route.parent) {
+      this.route.parent.params.subscribe((params) => {
+        if (params['roomId']) {
+          this.roomIdToJoin = params['roomId'];
+          this.isDirectJoin = true;
+        }
+      });
+    }
   }
 
   public randomizeAvatar(): void {

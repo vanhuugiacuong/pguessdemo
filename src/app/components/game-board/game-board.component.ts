@@ -129,6 +129,11 @@ export class GameBoardComponent implements OnInit, OnDestroy {
     return Array.from({ length: limit }, (_, i) => i);
   }
 
+  public get isHost(): boolean {
+    if (!this.roomState) return false;
+    return this.roomState.hostId === this.myPlayerId;
+  }
+
   // --- LOBBY ROOM SETTINGS ACTIONS ---
 
   public get selectedGameMode(): 'A' | 'B' {
@@ -141,18 +146,22 @@ export class GameBoardComponent implements OnInit, OnDestroy {
   }
 
   public changeMode(mode: 'A' | 'B'): void {
+    if (!this.isHost) return;
     this.gameState.updateRoomSettings({ mode });
   }
 
   public changeTimeLimit(limit: number): void {
+    if (!this.isHost) return;
     this.gameState.updateRoomSettings({ drawTimeLimit: limit });
   }
 
   public changeMaxPlayers(limit: number): void {
+    if (!this.isHost) return;
     this.gameState.updateRoomSettings({ maxPlayers: limit });
   }
 
   public changeBotCount(bots: number): void {
+    if (!this.isHost) return;
     this.gameState.updateRoomSettings({ botCount: bots });
   }
 
@@ -178,6 +187,7 @@ export class GameBoardComponent implements OnInit, OnDestroy {
   // --- GAME ACTIONS ---
 
   public onStartGame(): void {
+    if (!this.isHost) return;
     this.gameState.startGame();
   }
 

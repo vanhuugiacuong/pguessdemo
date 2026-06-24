@@ -1,8 +1,1 @@
-<div class="min-h-screen bg-transparent flex flex-col justify-center items-center w-full">
-  <ng-container *ngIf="(roomState$ | async) as state; else showLobby">
-    <app-game-board class="w-full min-h-screen"></app-game-board>
-  </ng-container>
-  <ng-template #showLobby>
-    <app-lobby class="w-full p-4"></app-lobby>
-  </ng-template>
-</div>
+<router-outlet></router-outlet>

@@ -267,14 +267,17 @@
               <div class="grid grid-cols-2 gap-4">
                 <!-- Mode A (Thường) -->
                 <div
-                  (click)="changeMode('A')"
+                  (click)="isHost && changeMode('A')"
                   [ngClass]="{
                     'border-green-400 ring-4 ring-green-400/25 scale-105 bg-purple-950/40':
                       selectedGameMode === 'A',
                     'border-white/10 bg-purple-950/15 hover:bg-purple-950/25':
-                      selectedGameMode !== 'A',
+                      selectedGameMode !== 'A' && isHost,
+                    'border-white/5 bg-purple-950/5 opacity-60 cursor-not-allowed':
+                      selectedGameMode !== 'A' && !isHost,
+                    'cursor-pointer': isHost
                   }"
-                  class="flex flex-col items-center justify-center p-4 border-4 rounded-2xl transition-all cursor-pointer relative group text-center min-h-[170px]"
+                  class="flex flex-col items-center justify-center p-4 border-4 rounded-2xl transition-all relative group text-center min-h-[170px]"
                 >
                   <img
                     src="/assets/mode/11.svg"
@@ -301,14 +304,17 @@
 
                 <!-- Mode B (Phá Băng) -->
                 <div
-                  (click)="changeMode('B')"
+                  (click)="isHost && changeMode('B')"
                   [ngClass]="{
                     'border-green-400 ring-4 ring-green-400/25 scale-105 bg-purple-950/40':
                       selectedGameMode === 'B',
                     'border-white/10 bg-purple-950/15 hover:bg-purple-950/25':
-                      selectedGameMode !== 'B',
+                      selectedGameMode !== 'B' && isHost,
+                    'border-white/5 bg-purple-950/5 opacity-60 cursor-not-allowed':
+                      selectedGameMode !== 'B' && !isHost,
+                    'cursor-pointer': isHost
                   }"
-                  class="flex flex-col items-center justify-center p-4 border-4 rounded-2xl transition-all cursor-pointer relative group text-center min-h-[170px]"
+                  class="flex flex-col items-center justify-center p-4 border-4 rounded-2xl transition-all relative group text-center min-h-[170px]"
                 >
                   <img
                     src="/assets/mode/9.svg"
@@ -351,9 +357,10 @@
                   >Thời gian vẽ</span
                 >
                 <select
+                  [disabled]="!isHost"
                   [ngModel]="roomState?.timeLeft"
                   (ngModelChange)="changeTimeLimit($event)"
-                  class="px-3 py-1.5 bg-purple-950/60 border border-purple-800/40 text-xs font-bold text-white rounded-lg focus:outline-none cursor-pointer"
+                  class="px-3 py-1.5 bg-purple-950/60 border border-purple-800/40 text-xs font-bold text-white rounded-lg focus:outline-none cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   <option [value]="30" class="bg-purple-950 text-white">30 Giây</option>
                   <option [value]="60" class="bg-purple-950 text-white">60 Giây</option>
@@ -369,9 +376,10 @@
                   >Chế độ chơi</span
                 >
                 <select
+                  [disabled]="!isHost"
                   [ngModel]="selectedGameMode"
                   (ngModelChange)="changeMode($event)"
-                  class="px-3 py-1.5 bg-purple-950/60 border border-purple-800/40 text-xs font-bold text-white rounded-lg focus:outline-none cursor-pointer"
+                  class="px-3 py-1.5 bg-purple-950/60 border border-purple-800/40 text-xs font-bold text-white rounded-lg focus:outline-none cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   <option value="A" class="bg-purple-950 text-white">Mode A: Skribbl Style</option>
                   <option value="B" class="bg-purple-950 text-white">
@@ -388,9 +396,10 @@
                   >Giới hạn người chơi</span
                 >
                 <select
+                  [disabled]="!isHost"
                   [ngModel]="roomState?.settings?.maxPlayers || 10"
                   (ngModelChange)="changeMaxPlayers($event)"
-                  class="px-3 py-1.5 bg-purple-950/60 border border-purple-800/40 text-xs font-bold text-white rounded-lg focus:outline-none cursor-pointer"
+                  class="px-3 py-1.5 bg-purple-950/60 border border-purple-800/40 text-xs font-bold text-white rounded-lg focus:outline-none cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   <option [value]="2" class="bg-purple-950 text-white">2 Người chơi</option>
                   <option [value]="4" class="bg-purple-950 text-white">4 Người chơi</option>
@@ -424,11 +433,22 @@
         </div>
 
         <button
+          *ngIf="isHost"
           (click)="onStartGame()"
           class="play-btn px-10 py-3.5 bg-white hover:bg-slate-100 font-black text-purple-950 text-base rounded-full shadow-2xl active:scale-95 transition-all cursor-pointer flex items-center gap-2 border-b-6 border-purple-300"
         >
           <svg lucidePlay class="w-5 h-5 text-green-500 fill-green-500"></svg> BẤT ĐẦU
         </button>
+        <div
+          *ngIf="!isHost"
+          class="px-6 py-3 bg-purple-950/40 border border-purple-900/30 text-purple-300 font-extrabold text-sm rounded-full tracking-wide shadow-md flex items-center gap-2"
+        >
+          <svg class="animate-spin h-4.5 w-4.5 text-purple-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          Đang chờ chủ phòng bắt đầu trò chơi...
+        </div>
       </div>
     </div>
     <!-- 2. PLAYING PHASE -->

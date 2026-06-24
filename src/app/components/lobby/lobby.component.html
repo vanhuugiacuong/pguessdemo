@@ -116,7 +116,8 @@
                 <input
                   type="text"
                   [(ngModel)]="roomIdToJoin"
-                  class="flex-1 px-4 py-2.5 rounded-xl bg-purple-950/30 border-2 border-purple-800/60 text-white placeholder-purple-800/40 font-bold text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all shadow-inner uppercase"
+                  [disabled]="isDirectJoin"
+                  class="flex-1 px-4 py-2.5 rounded-xl bg-purple-950/30 border-2 border-purple-800/60 text-white placeholder-purple-800/40 font-bold text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all shadow-inner uppercase disabled:opacity-50 disabled:cursor-not-allowed"
                   placeholder="MÃ PHÒNG (VD: ABCXYZ)..."
                 />
                 <button

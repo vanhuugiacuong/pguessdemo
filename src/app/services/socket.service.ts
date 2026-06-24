@@ -21,9 +21,10 @@ export class SocketService {
   public clearDrawingEvent$ = this.clearDrawingSubject.asObservable();
 
   constructor() {
-    // Khởi tạo kết nối tới server NestJS ở cổng 3000
+    // Khởi tạo kết nối tới server NestJS ở cổng 3000 nhưng không tự động kết nối
     this.socket = io('http://localhost:3000', {
-      transports: ['websocket']
+      transports: ['websocket'],
+      autoConnect: false
     });
 
     // Lắng nghe sự kiện room_state_updated từ server
@@ -78,6 +79,9 @@ export class SocketService {
    */
   public createRoom(nickname: string, avatar: string, settings: GameSettings): void {
     this.resetState();
+    if (!this.socket.connected) {
+      this.socket.connect();
+    }
     this.socket.emit('create_room', { nickname, avatar, settings }, (response: any) => {
       if (response && !response.error) {
         const normalizedState: RoomState = {
@@ -96,6 +100,9 @@ export class SocketService {
    */
   public joinRoom(roomId: string, nickname: string, avatar: string): void {
     this.resetState();
+    if (!this.socket.connected) {
+      this.socket.connect();
+    }
     this.socket.emit('join_room', { roomId, nickname, avatar }, (response: any) => {
       if (response && !response.error) {
         const normalizedState: RoomState = {
@@ -138,6 +145,7 @@ export class SocketService {
    */
   public leaveRoom(roomId: string): void {
     this.socket.emit('leave_room', { roomId });
+    this.socket.disconnect();
     this.roomStateSubject.next(null);
     this.resetState();
   }

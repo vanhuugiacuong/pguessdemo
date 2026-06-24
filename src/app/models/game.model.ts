@@ -59,4 +59,5 @@ export interface RoomState {
   roundNumber: number;
   maxRounds: number;
   settings?: GameSettings;
+  hostId?: string;
 }
