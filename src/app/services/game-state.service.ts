@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { RoomState, ChatMessage, DrawStroke, GameSettings } from '../models/game.model';
 import { MockServerService } from './mock-server.service';
+import { SocketService } from './socket.service';
 
 @Injectable({
   providedIn: 'root'
@@ -15,8 +16,14 @@ export class GameStateService {
   private playerName: string = 'Player 1';
   private playerAvatar: string = '2.svg';
 
-  constructor(private mockServer: MockServerService) {
-    this.roomState$ = this.mockServer.roomState$;
+  constructor(
+    private mockServer: MockServerService,
+    private socketService: SocketService
+  ) {
+    // Trỏ trạng thái phòng trực tiếp sang SocketService để tương tác với NestJS
+    this.roomState$ = this.socketService.roomState$;
+    
+    // Giữ kết nối Canvas và Chat bằng MockServerService như cũ
     this.chatMessages$ = this.mockServer.chatMessages$;
     this.drawingStream$ = this.mockServer.drawingStream$;
     this.clearDrawingEvent$ = this.mockServer.clearDrawingEvent$;
@@ -34,10 +41,20 @@ export class GameStateService {
     return this.mockServer.getWordBank();
   }
 
+  public getMyPlayerId(): string | null {
+    return this.socketService.getSocketId();
+  }
+
   public createRoom(playerName: string, avatar: string, settings: GameSettings): void {
     this.playerName = playerName.trim() || 'Player 1';
     this.playerAvatar = avatar;
-    this.mockServer.createRoom(this.playerName, this.playerAvatar, settings);
+    this.socketService.createRoom(this.playerName, avatar, settings);
+  }
+
+  public joinRoom(roomId: string, playerName: string, avatar: string): void {
+    this.playerName = playerName.trim() || 'Player 1';
+    this.playerAvatar = avatar;
+    this.socketService.joinRoom(roomId, this.playerName, avatar);
   }
 
   public updateRoomSettings(settings: Partial<GameSettings>): void {

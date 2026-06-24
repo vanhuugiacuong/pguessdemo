@@ -19,8 +19,12 @@ export class GalleryRevealComponent {
 
   constructor(private gameState: GameStateService) {}
 
+  public get myPlayerId(): string | null {
+    return this.gameState.getMyPlayerId();
+  }
+
   public get isPlayerGuesser(): boolean {
-    return this.roomState?.guesserId === 'player-1';
+    return this.roomState?.guesserId === this.myPlayerId;
   }
 
   public get activeGuesser(): Player | undefined {

@@ -107,6 +107,27 @@
               />
             </div>
 
+            <!-- Join Room Section -->
+            <div class="space-y-1.5 pt-1">
+              <label class="block text-xs font-extrabold tracking-wide text-purple-200 uppercase"
+                >Hoặc nhập Mã phòng để tham gia</label
+              >
+              <div class="flex gap-2">
+                <input
+                  type="text"
+                  [(ngModel)]="roomIdToJoin"
+                  class="flex-1 px-4 py-2.5 rounded-xl bg-purple-950/30 border-2 border-purple-800/60 text-white placeholder-purple-800/40 font-bold text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all shadow-inner uppercase"
+                  placeholder="MÃ PHÒNG (VD: ABCXYZ)..."
+                />
+                <button
+                  (click)="onJoinRoom()"
+                  class="px-5 py-2.5 bg-green-500 hover:bg-green-600 text-white font-extrabold text-xs rounded-xl active:scale-95 transition-all cursor-pointer shadow-md uppercase tracking-wider"
+                >
+                  Tham gia
+                </button>
+              </div>
+            </div>
+
             <!-- Mini Settings panel (Mode, Bots, Time) inside card -->
             <div class="grid grid-cols-2 gap-4 pt-1">
               <div class="space-y-1.5 flex flex-col justify-end">
@@ -142,10 +163,11 @@
         <!-- Big Play Button -->
         <div class="flex justify-center pt-2">
           <button
-            (click)="onCreateRoom()"
-            class="play-btn px-10 py-3 bg-white hover:bg-slate-100 font-black text-purple-950 text-lg rounded-full shadow-2xl active:scale-95 transition-all cursor-pointer flex items-center gap-2.5 border-b-6 border-purple-300"
+            (click)="roomIdToJoin ? onJoinRoom() : onCreateRoom()"
+            class="play-btn px-10 py-3 bg-white hover:bg-slate-100 font-black text-purple-950 text-lg rounded-full shadow-2xl active:scale-95 transition-all cursor-pointer flex items-center gap-2.5 border-b-6 border-purple-300 shadow-purple-900/30"
           >
-            <svg lucidePlay class="w-6 h-6 text-green-500 fill-green-500"></svg> BẮT ĐẦU
+            <svg lucidePlay class="w-6 h-6 text-green-500 fill-green-500"></svg> 
+            {{ roomIdToJoin ? 'THAM GIA PHÒNG' : 'BẮT ĐẦU' }}
           </button>
         </div>
       </div>

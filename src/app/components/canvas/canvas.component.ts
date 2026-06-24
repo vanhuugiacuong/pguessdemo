@@ -78,6 +78,10 @@ export class CanvasComponent implements OnInit, AfterViewInit, OnDestroy {
 
   constructor(private gameState: GameStateService) {}
 
+  public get myPlayerId(): string | null {
+    return this.gameState.getMyPlayerId();
+  }
+
   public maxTimeObserved = 60;
 
   public get timerPercentage(): number {

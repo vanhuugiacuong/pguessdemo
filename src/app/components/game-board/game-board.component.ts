@@ -72,24 +72,32 @@ export class GameBoardComponent implements OnInit, OnDestroy {
     return this.roomState?.phase === 'GAME_OVER';
   }
 
+  public get myPlayerId(): string | null {
+    return this.gameState.getMyPlayerId();
+  }
+
   public get isUserDrawer(): boolean {
     if (!this.roomState) return false;
+    const myId = this.myPlayerId;
+    if (!myId) return false;
     if (this.roomState.guesserId) {
       // Mode B: User draws if they are NOT the guesser
-      return this.roomState.guesserId !== 'player-1';
+      return this.roomState.guesserId !== myId;
     }
     // Mode A: User draws if they are the drawer
-    return this.roomState.drawerId === 'player-1';
+    return this.roomState.drawerId === myId;
   }
 
   public get isUserGuesser(): boolean {
     if (!this.roomState) return false;
+    const myId = this.myPlayerId;
+    if (!myId) return false;
     if (this.roomState.guesserId) {
       // Mode B: User guesses if they are the guesser
-      return this.roomState.guesserId === 'player-1';
+      return this.roomState.guesserId === myId;
     }
     // Mode A: User guesses if they are NOT the drawer
-    return this.roomState.drawerId !== 'player-1';
+    return this.roomState.drawerId !== myId;
   }
 
   public get currentDrawerPlayer(): Player | undefined {
@@ -145,8 +153,12 @@ export class GameBoardComponent implements OnInit, OnDestroy {
 
   public copyInviteLink(): void {
     if (!this.roomState) return;
-    navigator.clipboard.writeText(this.roomState.id).then(() => {
-      alert('Đã sao chép Room ID: ' + this.roomState?.id);
+    const roomId = this.roomState.id || (this.roomState as any).roomId;
+    const inviteUrl = `${window.location.origin}?room=${roomId}`;
+    navigator.clipboard.writeText(inviteUrl).then(() => {
+      alert('Đã sao chép link mời: ' + inviteUrl);
+    }).catch((err) => {
+      console.error('Không thể sao chép link mời: ', err);
     });
   }
 

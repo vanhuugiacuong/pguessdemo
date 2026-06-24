@@ -50,8 +50,8 @@
           <div
             class="flex-1 text-center font-black text-xs md:text-sm uppercase tracking-wider text-[#4ce0aa] drop-shadow-sm z-20">
             <span *ngIf="readOnly">
-              <span *ngIf="roomState?.guesserId === 'player-1'">Ý TƯỞNG CỦA MỌI NGƯỜI</span>
-              <span *ngIf="roomState?.guesserId !== 'player-1'">ĐANG VẼ: {{ roomState?.obfuscatedWord }}</span>
+              <span *ngIf="roomState?.guesserId === myPlayerId">Ý TƯỞNG CỦA MỌI NGƯỜI</span>
+              <span *ngIf="roomState?.guesserId !== myPlayerId">ĐANG VẼ: {{ roomState?.obfuscatedWord }}</span>
             </span>
             <span *ngIf="!readOnly">
               HÃY VẼ: {{ roomState?.currentWord | uppercase }}

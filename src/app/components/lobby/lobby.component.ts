@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { GameStateService } from '../../services/game-state.service';
 import { GameSettings, GameMode } from '../../models/game.model';
 import {
@@ -44,6 +45,7 @@ export class LobbyComponent implements OnInit {
   public botCount = 3;
   public drawTimeLimit = 60;
   public wordCategory = 'General';
+  public roomIdToJoin = '';
 
   // Avatars list from assets
   public avatars: string[] = ['2.svg', '30.svg', '33.svg', '34.svg', '39.svg', '52.svg', '58.svg'];
@@ -94,7 +96,10 @@ export class LobbyComponent implements OnInit {
   ];
   public activeCarouselIndex = 1; // Default to step 2
 
-  constructor(private gameState: GameStateService) {}
+  constructor(
+    private gameState: GameStateService,
+    private route: ActivatedRoute
+  ) {}
 
   ngOnInit(): void {
     const funnyNames = [
@@ -107,6 +112,12 @@ export class LobbyComponent implements OnInit {
     ];
     this.nickname = funnyNames[Math.floor(Math.random() * funnyNames.length)];
     this.randomizeAvatar();
+
+    this.route.queryParams.subscribe((params) => {
+      if (params['room']) {
+        this.roomIdToJoin = params['room'];
+      }
+    });
   }
 
   public randomizeAvatar(): void {
@@ -127,7 +138,6 @@ export class LobbyComponent implements OnInit {
     this.activeCarouselIndex = (this.activeCarouselIndex + 1) % this.carouselSteps.length;
   }
 
-
   public onCreateRoom(): void {
     const settings: GameSettings = {
       mode: this.selectedMode,
@@ -138,5 +148,13 @@ export class LobbyComponent implements OnInit {
     };
 
     this.gameState.createRoom(this.nickname, this.currentAvatar, settings);
+  }
+
+  public onJoinRoom(): void {
+    if (!this.roomIdToJoin.trim()) {
+      alert('Vui lòng nhập Mã phòng!');
+      return;
+    }
+    this.gameState.joinRoom(this.roomIdToJoin.trim(), this.nickname, this.currentAvatar);
   }
 }
