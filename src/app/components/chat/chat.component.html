@@ -4,9 +4,9 @@
   <!-- Header Title -->
   <div class="px-4 py-3 bg-slate-800 border-b border-slate-700 flex items-center justify-between">
     <span class="text-sm font-semibold text-slate-300 flex items-center gap-1.5">
-      <span>💬</span> Chat & Guesses
+      <span>💬</span> Trò chuyện & Dự đoán
     </span>
-    <span class="text-xs text-slate-400 font-mono">{{ messages.length }} messages</span>
+    <span class="text-xs text-slate-400 font-mono">{{ messages.length }} tin nhắn</span>
   </div>
 
   <!-- Messages List -->
@@ -66,7 +66,7 @@
       type="text"
       [(ngModel)]="currentGuess"
       name="guessInput"
-      placeholder="Type your guess here..."
+      placeholder="Nhập dự đoán của bạn..."
       autocomplete="off"
       class="flex-1 px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all text-sm"
     />
@@ -74,7 +74,7 @@
       type="submit"
       class="px-4 py-2 bg-blue-600 hover:bg-blue-500 active:scale-95 transition-all text-white text-sm font-semibold rounded-xl cursor-pointer"
     >
-      Guess
+      Đoán
     </button>
   </form>
 </div>

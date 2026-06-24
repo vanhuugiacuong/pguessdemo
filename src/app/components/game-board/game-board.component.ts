@@ -124,6 +124,11 @@ export class GameBoardComponent implements OnInit, OnDestroy {
     return [...state.players].sort((a, b) => b.score - a.score);
   }
 
+  public get playerSlots(): number[] {
+    const limit = this.roomState?.settings?.maxPlayers || 10;
+    return Array.from({ length: limit }, (_, i) => i);
+  }
+
   // --- LOBBY ROOM SETTINGS ACTIONS ---
 
   public get selectedGameMode(): 'A' | 'B' {
@@ -141,6 +146,10 @@ export class GameBoardComponent implements OnInit, OnDestroy {
 
   public changeTimeLimit(limit: number): void {
     this.gameState.updateRoomSettings({ drawTimeLimit: limit });
+  }
+
+  public changeMaxPlayers(limit: number): void {
+    this.gameState.updateRoomSettings({ maxPlayers: limit });
   }
 
   public changeBotCount(bots: number): void {

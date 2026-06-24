@@ -15,18 +15,20 @@ export class GameStateService {
 
   private playerName: string = 'Player 1';
   private playerAvatar: string = '2.svg';
+  private currentRoomId: string | null = null;
 
   constructor(
     private mockServer: MockServerService,
     private socketService: SocketService
   ) {
-    // Trỏ trạng thái phòng trực tiếp sang SocketService để tương tác với NestJS
     this.roomState$ = this.socketService.roomState$;
-    
-    // Giữ kết nối Canvas và Chat bằng MockServerService như cũ
-    this.chatMessages$ = this.mockServer.chatMessages$;
-    this.drawingStream$ = this.mockServer.drawingStream$;
-    this.clearDrawingEvent$ = this.mockServer.clearDrawingEvent$;
+    this.chatMessages$ = this.socketService.chatMessages$;
+    this.drawingStream$ = this.socketService.drawingStream$;
+    this.clearDrawingEvent$ = this.socketService.clearDrawingEvent$;
+
+    this.roomState$.subscribe((state) => {
+      this.currentRoomId = state ? state.id : null;
+    });
   }
 
   public getPlayerName(): string {
@@ -58,30 +60,58 @@ export class GameStateService {
   }
 
   public updateRoomSettings(settings: Partial<GameSettings>): void {
-    this.mockServer.updateRoomSettings(settings);
+    if (this.currentRoomId) {
+      this.socketService.updateRoomSettings(this.currentRoomId, settings);
+    } else {
+      this.mockServer.updateRoomSettings(settings);
+    }
   }
 
   public startGame(): void {
-    this.mockServer.startGame();
+    if (this.currentRoomId) {
+      this.socketService.startGame(this.currentRoomId);
+    } else {
+      this.mockServer.startGame();
+    }
   }
 
   public submitGuess(text: string): void {
-    this.mockServer.sendMessage(text);
+    if (this.currentRoomId) {
+      this.socketService.sendMessage(this.currentRoomId, text);
+    } else {
+      this.mockServer.sendMessage(text);
+    }
   }
 
   public submitModeBGuess(guess: string): void {
-    this.mockServer.submitModeBGuess(guess);
+    if (this.currentRoomId) {
+      this.socketService.submitModeBGuess(this.currentRoomId, guess);
+    } else {
+      this.mockServer.submitModeBGuess(guess);
+    }
   }
 
   public sendStroke(stroke: DrawStroke): void {
-    this.mockServer.sendDrawingStroke(stroke);
+    if (this.currentRoomId) {
+      this.socketService.sendStroke(this.currentRoomId, stroke);
+    } else {
+      this.mockServer.sendDrawingStroke(stroke);
+    }
   }
 
   public clearCanvas(): void {
-    this.mockServer.clearDrawing();
+    if (this.currentRoomId) {
+      this.socketService.clearCanvas(this.currentRoomId);
+    } else {
+      this.mockServer.clearDrawing();
+    }
   }
 
   public resetRoom(): void {
-    this.mockServer.resetRoom();
+    if (this.currentRoomId) {
+      this.socketService.leaveRoom(this.currentRoomId);
+    } else {
+      this.mockServer.resetRoom();
+    }
   }
 }

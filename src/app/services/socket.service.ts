@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Subject } from 'rxjs';
 import { io, Socket } from 'socket.io-client';
-import { RoomState, GameSettings } from '../models/game.model';
+import { RoomState, GameSettings, ChatMessage, DrawStroke } from '../models/game.model';
 
 @Injectable({
   providedIn: 'root'
@@ -10,6 +10,15 @@ export class SocketService {
   private socket: Socket;
   private roomStateSubject = new BehaviorSubject<RoomState | null>(null);
   public roomState$ = this.roomStateSubject.asObservable();
+
+  private chatMessagesSubject = new BehaviorSubject<ChatMessage[]>([]);
+  public chatMessages$ = this.chatMessagesSubject.asObservable();
+
+  private drawingStreamSubject = new Subject<DrawStroke>();
+  public drawingStream$ = this.drawingStreamSubject.asObservable();
+
+  private clearDrawingSubject = new Subject<void>();
+  public clearDrawingEvent$ = this.clearDrawingSubject.asObservable();
 
   constructor() {
     // Khởi tạo kết nối tới server NestJS ở cổng 3000
@@ -31,6 +40,19 @@ export class SocketService {
       }
     });
 
+    this.socket.on('new_chat_message', (msg: ChatMessage) => {
+      const current = this.chatMessagesSubject.value;
+      this.chatMessagesSubject.next([...current, msg]);
+    });
+
+    this.socket.on('drawing_stream', (stroke: DrawStroke) => {
+      this.drawingStreamSubject.next(stroke);
+    });
+
+    this.socket.on('clear_drawing', () => {
+      this.clearDrawingSubject.next();
+    });
+
     this.socket.on('connect', () => {
       console.log('Socket.io connected:', this.socket.id);
     });
@@ -47,10 +69,15 @@ export class SocketService {
     return this.socket?.id || null;
   }
 
+  public resetState(): void {
+    this.chatMessagesSubject.next([]);
+  }
+
   /**
    * Gửi sự kiện tạo phòng mới
    */
   public createRoom(nickname: string, avatar: string, settings: GameSettings): void {
+    this.resetState();
     this.socket.emit('create_room', { nickname, avatar, settings }, (response: any) => {
       if (response && !response.error) {
         const normalizedState: RoomState = {
@@ -68,6 +95,7 @@ export class SocketService {
    * Gửi sự kiện tham gia phòng có sẵn
    */
   public joinRoom(roomId: string, nickname: string, avatar: string): void {
+    this.resetState();
     this.socket.emit('join_room', { roomId, nickname, avatar }, (response: any) => {
       if (response && !response.error) {
         const normalizedState: RoomState = {
@@ -80,4 +108,38 @@ export class SocketService {
       }
     });
   }
+
+  public updateRoomSettings(roomId: string, settings: Partial<GameSettings>): void {
+    this.socket.emit('update_room_settings', { roomId, settings });
+  }
+
+  public startGame(roomId: string): void {
+    this.socket.emit('start_game', { roomId });
+  }
+
+  public sendStroke(roomId: string, stroke: DrawStroke): void {
+    this.socket.emit('draw_stroke', { roomId, stroke });
+  }
+
+  public clearCanvas(roomId: string): void {
+    this.socket.emit('clear_canvas', { roomId });
+  }
+
+  public sendMessage(roomId: string, text: string): void {
+    this.socket.emit('send_message', { roomId, text });
+  }
+
+  public submitModeBGuess(roomId: string, guess: string): void {
+    this.socket.emit('submit_guess', { roomId, guess });
+  }
+
+  /**
+   * Rời khỏi phòng hiện tại
+   */
+  public leaveRoom(roomId: string): void {
+    this.socket.emit('leave_room', { roomId });
+    this.roomStateSubject.next(null);
+    this.resetState();
+  }
 }
+

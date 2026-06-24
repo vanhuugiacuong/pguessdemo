@@ -20,6 +20,7 @@ export interface GameSettings {
   revealTimeLimit: number; // in seconds
   botCount: number;
   wordCategory: string;
+  maxPlayers?: number;
 }
 
 export interface DrawPoint {
@@ -57,4 +58,5 @@ export interface RoomState {
   timeLeft: number;
   roundNumber: number;
   maxRounds: number;
+  settings?: GameSettings;
 }
