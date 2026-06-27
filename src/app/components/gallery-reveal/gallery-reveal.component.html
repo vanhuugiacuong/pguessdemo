@@ -1,133 +1,128 @@
-<div class="gallery-wrapper w-full h-full flex flex-col space-y-6">
-  <!-- Title / Heading -->
-  <div
-    class="text-center bg-slate-900/50 backdrop-blur border border-slate-800 p-4 rounded-2xl flex flex-col items-center justify-center"
-  >
-    <h2 class="text-lg font-bold text-slate-100 flex items-center gap-2">🕵️ Tam Sao Thất Bản (Mode B)</h2>
-    <p class="text-slate-400 text-xs mt-1">
-      @if (roomState.phase === 'PLAYING') {
-        Người đoán quan sát bức tranh cuối cùng trong chuỗi vẽ truyền tay và đoán từ khóa ban đầu.
-      } @else {
-        Kết quả chuỗi vẽ truyền tay từ khóa ban đầu!
-      }
-    </p>
-  </div>
-
-  <!-- Canvases Grid -->
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1 overflow-y-auto max-h-[50vh] p-1">
+<div class="gallery-wrapper w-full h-full flex flex-col space-y-4">
+  <!-- History Flow Style for Guess Phase -->
+  <div class="flex-1 flex flex-col justify-center space-y-6 w-full max-w-4xl mx-auto overflow-y-auto p-4 scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-transparent min-h-0">
+    
+    <!-- Step 1: Drawing from the previous artist -->
     @for (p of drawingPlayers; track p.id) {
-      <div
-        class="gallery-card bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col space-y-3 relative overflow-hidden shadow-md hover:border-slate-700 transition-all"
-      >
-        <!-- Player Tag -->
-        <div class="flex items-center justify-between border-b border-slate-800 pb-2">
-          <span class="font-bold text-sm text-slate-200 flex items-center gap-1.5">
-            <span>🎨</span> {{ p.name }}
-            @if (p.id === myPlayerId) {
-              <span
-                class="text-[10px] bg-blue-500/20 text-blue-400 border border-blue-500/30 px-1.5 py-0.5 rounded-full font-normal"
-                >Bạn</span
-              >
-            }
-            @if (p.isBot) {
-              <span
-                class="text-[10px] bg-slate-800 text-slate-400 border border-slate-700 px-1.5 py-0.5 rounded-full font-normal"
-                >Bot</span
-              >
-            }
-          </span>
-          @if (!p.drawingData) {
-            <span
-              class="text-xs text-amber-400 animate-pulse flex items-center gap-1"
-            >
-              <span>✏️</span> đang vẽ...
-            </span>
-          }
-          @if (p.drawingData) {
-            <span class="text-xs text-emerald-400 flex items-center gap-1">
-              <span>✓</span> Xong
-            </span>
-          }
-        </div>
-
-        <!-- Canvas Block -->
-        <div
-          class="relative w-full aspect-[8/5] bg-white rounded-xl overflow-hidden shadow-inner flex items-center justify-center border border-slate-800"
-        >
-          <!-- Render Canvas if drawing exists -->
-          @if (p.drawingData) {
-            <app-canvas
-              [readOnly]="true"
-              [externalStrokes]="p.drawingData"
-              class="w-full h-full"
-            >
-            </app-canvas>
-          }
-
-          <!-- Spinner if drawing is in progress -->
-          @if (!p.drawingData) {
-            <div
-              class="flex flex-col items-center justify-center text-slate-400 text-sm space-y-2"
-            >
-              <div
-                class="w-8 h-8 border-4 border-slate-700 border-t-blue-500 rounded-full animate-spin"
-              ></div>
-              <span class="text-xs">Đang chuẩn bị tranh vẽ...</span>
+      <!-- Align Left if drawer is other user -->
+      @if (p.id !== myPlayerId) {
+        <div class="flex items-start gap-3 justify-start w-full">
+          <!-- Drawer Avatar (Left) -->
+          <div class="w-10 h-10 rounded-full border-3 border-black bg-purple-300 flex items-center justify-center p-0.5 overflow-hidden shadow-[2px_2px_0px_rgba(0,0,0,1)] shrink-0 mt-2">
+            <img [src]="'/assets/user-logo/' + (p.avatar || 'avatar_1.png')" alt="Avatar" class="w-full h-full object-contain" />
+          </div>
+          <!-- Drawing Bubble (Right of Avatar) -->
+          <div class="relative w-full max-w-[70%] flex flex-col items-start space-y-1">
+            <span class="block text-[10px] font-black uppercase text-purple-300 tracking-wider">{{ p.name }} (Họa sĩ)</span>
+            
+            <div class="w-full aspect-[8/5] bg-white rounded-2xl overflow-hidden border-3 border-black shadow-[4px_4px_0px_rgba(0,0,0,1)] relative">
+              @if (p.drawingData) {
+                <app-canvas
+                  [readOnly]="true"
+                  [bareCanvas]="true"
+                  [externalStrokes]="p.drawingData"
+                  class="absolute inset-0 w-full h-full"
+                ></app-canvas>
+              } @else {
+                <div class="flex flex-col items-center justify-center text-slate-500 text-sm absolute inset-0">
+                  <div class="w-8 h-8 border-4 border-black border-t-indigo-500 rounded-full animate-spin"></div>
+                  <span class="text-xs font-bold mt-2">Đang chuẩn bị tranh vẽ...</span>
+                </div>
+              }
             </div>
-          }
+          </div>
         </div>
-      </div>
-    }
-  </div>
+      }
 
-  <!-- Bottom Console: Guess Controls -->
-  <div class="console-panel bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-xl">
-    <!-- Active Guesser Status -->
-    <div class="text-center mb-3">
-      <span class="text-xs uppercase tracking-wider text-slate-500 font-bold block"
-        >Người đoán hiện tại</span
-      >
-      <span class="text-base font-extrabold text-indigo-400">
-        {{ activeGuesser?.name }}
-        <span class="text-slate-400 font-normal">({{ isPlayerGuesser ? 'Bạn' : (activeGuesser?.isBot ? 'Bot' : 'Người chơi') }})</span>
-      </span>
-    </div>
-
-    <!-- Guesser Input Panel -->
-    @if (isPlayerGuesser && roomState.phase === 'PLAYING') {
-      <div class="space-y-4">
-        <div
-          class="p-3 bg-indigo-950/20 border border-indigo-900/50 rounded-xl text-center text-sm text-indigo-300"
-        >
-          🧐 Quan sát kỹ các bức tranh và nhập dự đoán của bạn bên dưới. Bạn chỉ được đoán một lần!
+      <!-- Align Right if drawer is current user -->
+      @if (p.id === myPlayerId) {
+        <div class="flex items-start gap-3 justify-end w-full">
+          <!-- Drawing Bubble (Left of Avatar) -->
+          <div class="relative w-full max-w-[70%] flex flex-col items-end space-y-1">
+            <span class="block text-[10px] font-black uppercase text-amber-300 tracking-wider">Bạn (Họa sĩ)</span>
+            
+            <div class="w-full aspect-[8/5] bg-white rounded-2xl overflow-hidden border-3 border-black shadow-[4px_4px_0px_rgba(0,0,0,1)] relative">
+              @if (p.drawingData) {
+                <app-canvas
+                  [readOnly]="true"
+                  [bareCanvas]="true"
+                  [externalStrokes]="p.drawingData"
+                  class="absolute inset-0 w-full h-full"
+                ></app-canvas>
+              } @else {
+                <div class="flex flex-col items-center justify-center text-slate-500 text-sm absolute inset-0">
+                  <div class="w-8 h-8 border-4 border-black border-t-indigo-500 rounded-full animate-spin"></div>
+                  <span class="text-xs font-bold mt-2">Đang chuẩn bị tranh vẽ...</span>
+                </div>
+              }
+            </div>
+          </div>
+          <!-- Drawer Avatar (Right) -->
+          <div class="w-10 h-10 rounded-full border-3 border-black bg-amber-300 flex items-center justify-center p-0.5 overflow-hidden shadow-[2px_2px_0px_rgba(0,0,0,1)] shrink-0 mt-2">
+            <img [src]="'/assets/user-logo/' + (p.avatar || 'avatar_1.png')" alt="Avatar" class="w-full h-full object-contain" />
+          </div>
         </div>
-        <form (submit)="onSubmitGuess(); $event.preventDefault()" class="flex gap-3">
-          <input
-            type="text"
-            [(ngModel)]="guessText"
-            name="galleryGuess"
-            placeholder="Họ đang vẽ từ gì? Nhập vào đây..."
-            class="flex-1 px-4 py-3 rounded-xl bg-slate-850 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
-          />
-          <button
-            type="submit"
-            class="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 active:scale-95 transition-all text-white font-bold rounded-xl cursor-pointer"
-          >
-            Nộp Dự Đoán
-          </button>
-        </form>
-      </div>
+      }
     }
 
-    <!-- Non-guesser Waiting Panel -->
-    @if (!isPlayerGuesser && roomState.phase === 'PLAYING') {
-      <div
-        class="text-center p-3 bg-slate-950/40 rounded-xl border border-slate-800 text-slate-400 text-sm"
-      >
-        <span class="animate-pulse"
-          >⏳ Đang chờ {{ activeGuesser?.name }} phân tích tranh vẽ và đoán từ khóa...</span
-        >
-      </div>
+    <!-- Step 2: Guess Input / Waiting Flow -->
+    @if (roomState?.phase === 'PLAYING') {
+      <!-- If you are the guesser (Align Right like Messenger) -->
+      @if (isPlayerGuesser) {
+        <div class="flex items-start gap-3 justify-end w-full pt-4 border-t border-slate-800/50">
+          <div class="relative w-full max-w-[75%] flex flex-col items-end space-y-1">
+            <span class="block text-[10px] font-black uppercase text-green-300 tracking-wider">Bạn (Người đoán)</span>
+            
+            <div class="bg-slate-900 border-3 border-black p-4 rounded-2xl rounded-tr-none shadow-[4px_4px_0px_rgba(0,0,0,1)] w-full">
+              <div class="text-[11px] font-bold text-slate-300 mb-2">
+                🧐 Hãy đoán xem bức tranh trên vẽ từ khóa gì. Bạn chỉ được đoán một lần duy nhất!
+              </div>
+              <form (submit)="onSubmitGuess(); $event.preventDefault()" class="flex gap-2">
+                <input
+                  type="text"
+                  [(ngModel)]="guessText"
+                  name="galleryGuess"
+                  placeholder="Họ đang vẽ từ gì? Nhập vào đây..."
+                  autocomplete="off"
+                  class="flex-1 px-3 py-2 rounded-xl bg-purple-950/40 border-3 border-black text-white placeholder-purple-300/30 focus:outline-none focus:border-green-500 font-bold transition-all text-xs shadow-inner"
+                />
+                <button
+                  type="submit"
+                  class="px-4 py-2 bg-green-500 hover:bg-green-400 active:scale-95 transition-all text-white text-[10px] font-black uppercase tracking-wider rounded-xl border-3 border-black shadow-[2px_2px_0px_rgba(0,0,0,1)] cursor-pointer"
+                >
+                  Nộp
+                </button>
+              </form>
+            </div>
+          </div>
+          
+          <div class="w-10 h-10 rounded-full border-3 border-black bg-green-300 flex items-center justify-center p-0.5 overflow-hidden shadow-[2px_2px_0px_rgba(0,0,0,1)] shrink-0 mt-2">
+            <img [src]="'/assets/user-logo/' + (activeGuesser?.avatar || 'avatar_1.png')" alt="Avatar" class="w-full h-full object-contain" />
+          </div>
+        </div>
+      }
+
+      <!-- If another user is the guesser (Align Left) -->
+      @if (!isPlayerGuesser) {
+        <div class="flex items-start gap-3 justify-start w-full pt-4 border-t border-slate-800/50">
+          <div class="w-10 h-10 rounded-full border-3 border-black bg-purple-300 flex items-center justify-center p-0.5 overflow-hidden shadow-[2px_2px_0px_rgba(0,0,0,1)] shrink-0 mt-2">
+            <img [src]="'/assets/user-logo/' + (activeGuesser?.avatar || 'avatar_1.png')" alt="Avatar" class="w-full h-full object-contain" />
+          </div>
+
+          <div class="relative w-full max-w-[75%] flex flex-col items-start space-y-1">
+            <span class="block text-[10px] font-black uppercase text-purple-300 tracking-wider">{{ activeGuesser?.name }} (Người đoán)</span>
+            
+            <div class="bg-slate-900 text-slate-300 px-4 py-3 border-3 border-black rounded-2xl rounded-tl-none shadow-[4px_4px_0px_rgba(0,0,0,1)] relative text-left animate-pulse">
+              <div class="flex items-center gap-2">
+                <div class="w-4 h-4 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin shrink-0"></div>
+                <p class="text-xs font-bold leading-normal text-slate-400">
+                  Đang phân tích tranh vẽ và nhập dự đoán...
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
     }
   </div>
 </div>

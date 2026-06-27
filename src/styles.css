@@ -4,10 +4,7 @@ html, body {
   margin: 0;
   padding: 0;
   min-height: 100vh;
-  background: 
-    url('/assets/textura.png') no-repeat center / cover, 
-    linear-gradient(200deg, #4f46e5 0%, #7c3aed 50%, #c026d3 100%) !important;
-  background-attachment: fixed;
+  background-color: #1a0f30;
 }
 
 app-root {

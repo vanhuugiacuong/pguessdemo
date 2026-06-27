@@ -147,7 +147,15 @@ export class SocketService {
   }
 
   public startGame(roomId: string): void {
-    this.socket.emit('start_game', { roomId });
+    this.socket.emit('start_game', { roomId }, (response: any) => {
+      if (response && response.error) {
+        alert(response.error);
+      }
+    });
+  }
+
+  public selectWord(roomId: string, word: string): void {
+    this.socket.emit('select_word', { roomId, word });
   }
 
   public sendStroke(roomId: string, stroke: DrawStroke): void {

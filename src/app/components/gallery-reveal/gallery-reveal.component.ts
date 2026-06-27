@@ -13,7 +13,7 @@ import { CanvasComponent } from '../canvas/canvas.component';
   styleUrl: './gallery-reveal.component.css',
 })
 export class GalleryRevealComponent {
-  @Input() roomState!: RoomState;
+  @Input() roomState: RoomState | null = null;
 
   public guessText = '';
 
@@ -28,20 +28,23 @@ export class GalleryRevealComponent {
   }
 
   public get activeGuesser(): Player | undefined {
-    return this.roomState?.players.find((p) => p.id === this.roomState.guesserId);
+    const state = this.roomState;
+    if (!state) return undefined;
+    return state.players.find((p) => p.id === state.guesserId);
   }
 
   public get drawingPlayers(): Player[] {
-    if (!this.roomState) return [];
+    const state = this.roomState;
+    if (!state) return [];
     // Trong lúc chơi (lượt đoán), người đoán chỉ được nhìn bức tranh cuối cùng trong chuỗi vẽ truyền tay
-    if (this.roomState.phase === 'PLAYING') {
-      const lastDrawerIndex = this.roomState.players.length - 2;
+    if (state.phase === 'PLAYING') {
+      const lastDrawerIndex = state.players.length - 2;
       if (lastDrawerIndex >= 0) {
-        return [this.roomState.players[lastDrawerIndex]];
+        return [state.players[lastDrawerIndex]];
       }
     }
     // Khi kết thúc game/reveal, hiển thị toàn bộ chuỗi tranh vẽ của các họa sĩ
-    return this.roomState.players.filter((p) => p.id !== this.roomState.guesserId);
+    return state.players.filter((p) => p.id !== state.guesserId);
   }
 
   public onSubmitGuess(): void {

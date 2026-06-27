@@ -33,12 +33,64 @@ export class GameBoardComponent implements OnInit, OnDestroy {
   public cardPosition: 'left' | 'right' = 'left';
   public cardZoomState: 'normal' | 'zoomed' = 'normal';
 
+  public wordChoices: string[] = [];
+  public customWordInput = '';
+
   constructor(private gameState: GameStateService) {}
 
   ngOnInit(): void {
     this.subscription = this.gameState.roomState$.subscribe((state) => {
       this.roomState = state;
+      if (state && state.phase === 'WORD_SELECTION') {
+        if (this.isWordSelector && this.wordChoices.length === 0) {
+          const wordBank = this.gameState.getWordBank() || [];
+          if (wordBank.length > 0) {
+            const shuffled = [...wordBank].sort(() => 0.5 - Math.random());
+            this.wordChoices = shuffled.slice(0, 3);
+          } else {
+            this.wordChoices = ['Trái táo', 'Ngôi nhà', 'Con mèo'];
+          }
+        }
+      } else {
+        this.wordChoices = [];
+        this.customWordInput = '';
+      }
     });
+  }
+
+  public get isWordSelector(): boolean {
+    const state = this.roomState;
+    if (!state) return false;
+    const mode = state.settings?.mode || 'A';
+    if (mode === 'A') {
+      return state.drawerId === this.myPlayerId;
+    } else {
+      return state.roundNumber === 1 && state.guesserId === this.myPlayerId;
+    }
+  }
+
+  public get wordSelectorName(): string {
+    const state = this.roomState;
+    if (!state) return '';
+    const mode = state.settings?.mode || 'A';
+    if (mode === 'A') {
+      const drawer = state.players.find((p) => p.id === state.drawerId);
+      return drawer ? drawer.name : 'Họa sĩ';
+    } else {
+      const guesser = state.players.find((p) => p.id === state.guesserId);
+      return guesser ? guesser.name : 'Người đoán';
+    }
+  }
+
+  public onSelectWordChoice(word: string): void {
+    this.gameState.selectWord(word);
+  }
+
+  public onConfirmCustomWord(): void {
+    const word = this.customWordInput.trim();
+    if (!word) return;
+    this.gameState.selectWord(word);
+    this.customWordInput = '';
   }
 
   ngOnDestroy(): void {
@@ -49,6 +101,10 @@ export class GameBoardComponent implements OnInit, OnDestroy {
 
   public get isLobby(): boolean {
     return this.roomState?.phase === 'LOBBY';
+  }
+
+  public get isWordSelection(): boolean {
+    return this.roomState?.phase === 'WORD_SELECTION';
   }
 
   public get isPlaying(): boolean {
@@ -127,6 +183,47 @@ export class GameBoardComponent implements OnInit, OnDestroy {
     return state.players.filter((p) => p.id !== state.guesserId);
   }
 
+  public get albumSteps(): any[] {
+    if (!this.roomState) return [];
+    const steps: any[] = [];
+
+    // Step 1: Starting keyword (from first player)
+    const firstPlayer = this.roomState.players[0];
+    if (firstPlayer && this.roomState.currentWord) {
+      steps.push({
+        type: 'word',
+        player: firstPlayer,
+        content: `HÃY VẼ: "${this.roomState.currentWord.toUpperCase()}"`
+      });
+    }
+
+    // Step 2..N-1: Drawings in order
+    const drawers = this.roomState.players.filter(p => p.id !== this.roomState?.guesserId);
+    drawers.forEach((p, index) => {
+      if (p.drawingData && p.drawingData.length > 0) {
+        steps.push({
+          type: 'drawing',
+          player: p,
+          content: p.drawingData,
+          index: index + 1
+        });
+      }
+    });
+
+    // Step N: Guess from Guesser
+    const guesser = this.roomState.players.find(p => p.id === this.roomState?.guesserId);
+    if (guesser && this.roomState.finalGuess) {
+      steps.push({
+        type: 'guess',
+        player: guesser,
+        content: `Đoán là: "${this.roomState.finalGuess}"`,
+        isCorrect: this.roomState.finalGuessIsCorrect
+      });
+    }
+
+    return steps;
+  }
+
   public get sortedPlayers(): Player[] {
     const state = this.roomState;
     if (!state) return [];
@@ -197,6 +294,13 @@ export class GameBoardComponent implements OnInit, OnDestroy {
     }).catch((err) => {
       console.error('Không thể sao chép mã phòng: ', err);
     });
+  }
+
+  public getTimerDashArray(): string {
+    const timeLeft = this.roomState?.timeLeft ?? 0;
+    const total = this.roomState?.settings?.drawTimeLimit ?? 60;
+    const percentage = total > 0 ? (timeLeft / total) * 100 : 0;
+    return `${percentage}, 100`;
   }
 
   // --- GAME ACTIONS ---

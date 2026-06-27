@@ -88,6 +88,12 @@ export class GameStateService {
     }
   }
 
+  public selectWord(word: string): void {
+    if (this.currentRoomId) {
+      this.socketService.selectWord(this.currentRoomId, word);
+    }
+  }
+
   public submitGuess(text: string): void {
     if (this.currentRoomId) {
       this.socketService.sendMessage(this.currentRoomId, text);
