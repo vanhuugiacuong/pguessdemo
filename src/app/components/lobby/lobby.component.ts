@@ -47,6 +47,7 @@ export class LobbyComponent implements OnInit {
   public wordCategory = 'General';
   public roomIdToJoin = '';
   public isDirectJoin = false;
+  public activeTab: 'create' | 'join' = 'create';
 
   // Avatars list from assets
   public avatars: string[] = ['2.svg', '30.svg', '33.svg', '34.svg', '39.svg', '52.svg', '58.svg'];
@@ -115,6 +116,7 @@ export class LobbyComponent implements OnInit {
     this.route.queryParams.subscribe((params) => {
       if (params['room']) {
         this.roomIdToJoin = params['room'];
+        this.activeTab = 'join';
       }
     });
 
@@ -122,6 +124,7 @@ export class LobbyComponent implements OnInit {
       if (params['roomId']) {
         this.roomIdToJoin = params['roomId'];
         this.isDirectJoin = true;
+        this.activeTab = 'join';
       }
     });
 
@@ -130,6 +133,7 @@ export class LobbyComponent implements OnInit {
         if (params['roomId']) {
           this.roomIdToJoin = params['roomId'];
           this.isDirectJoin = true;
+          this.activeTab = 'join';
         }
       });
     }

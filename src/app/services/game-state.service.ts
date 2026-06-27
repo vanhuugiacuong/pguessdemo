@@ -104,6 +104,15 @@ export class GameStateService {
     }
   }
 
+  public submitDrawing(strokes: DrawStroke[]): void {
+    if (this.currentRoomId) {
+      this.socketService.submitDrawing(this.currentRoomId, strokes);
+    } else {
+      // Mock server could just save strokes to the active drawer
+      this.mockServer.submitDrawing(strokes);
+    }
+  }
+
   public sendStroke(stroke: DrawStroke): void {
     if (this.currentRoomId) {
       this.socketService.sendStroke(this.currentRoomId, stroke);

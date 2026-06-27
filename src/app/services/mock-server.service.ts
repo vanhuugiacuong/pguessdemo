@@ -433,6 +433,25 @@ export class MockServerService {
     this.chatMessages.next([...messages, newMsg]);
   }
 
+  public submitDrawing(strokes: DrawStroke[]): void {
+    const currentState = this.roomState.value;
+    if (currentState) {
+      const updatedPlayers = currentState.players.map(p => {
+        if (p.id === 'player-1') {
+          return {
+            ...p,
+            drawingData: strokes
+          };
+        }
+        return p;
+      });
+      this.roomState.next({
+        ...currentState,
+        players: updatedPlayers
+      });
+    }
+  }
+
   public submitModeBGuess(guess: string): void {
     const state = this.roomState.value;
     if (!state || state.phase !== 'PLAYING') return;

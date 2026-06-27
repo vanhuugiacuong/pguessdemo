@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { GameStateService } from '../../services/game-state.service';
-import { RoomState, Player, GamePhase } from '../../models/game.model';
+import { RoomState, Player, GamePhase, DrawStroke } from '../../models/game.model';
 import { Subscription } from 'rxjs';
 import { CanvasComponent } from '../canvas/canvas.component';
 import { ChatComponent } from '../chat/chat.component';
@@ -29,6 +29,9 @@ export class GameBoardComponent implements OnInit, OnDestroy {
 
   public activeSettingsTab: 'preset' | 'custom' = 'preset';
   public isMuted = false;
+  public isCardMinimized = false;
+  public cardPosition: 'left' | 'right' = 'left';
+  public cardZoomState: 'normal' | 'zoomed' = 'normal';
 
   constructor(private gameState: GameStateService) {}
 
@@ -68,11 +71,7 @@ export class GameBoardComponent implements OnInit, OnDestroy {
     if (!this.roomState) return false;
     const myId = this.myPlayerId;
     if (!myId) return false;
-    if (this.roomState.guesserId) {
-      // Mode B: User draws if they are NOT the guesser
-      return this.roomState.guesserId !== myId;
-    }
-    // Mode A: User draws if they are the drawer
+    // Both Mode A and B: User draws if they are designated as the active drawer
     return this.roomState.drawerId === myId;
   }
 
@@ -86,6 +85,28 @@ export class GameBoardComponent implements OnInit, OnDestroy {
     }
     // Mode A: User guesses if they are NOT the drawer
     return this.roomState.drawerId !== myId;
+  }
+
+  public get previousPlayerDrawing(): DrawStroke[] | undefined {
+    if (!this.roomState || !this.roomState.roundNumber) return undefined;
+    const prevIndex = this.roomState.roundNumber - 2;
+    if (prevIndex < 0) return undefined;
+    return this.roomState.players[prevIndex]?.drawingData;
+  }
+
+  public get isDrawingTurn(): boolean {
+    if (!this.roomState) return false;
+    return (this.roomState.roundNumber || 0) < this.roomState.players.length;
+  }
+
+  public get currentTurnPlayerName(): string {
+    if (!this.roomState) return '';
+    return this.roomState.players.find(p => p.id === this.roomState?.drawerId)?.name || '';
+  }
+
+  public get totalDrawingTurns(): number {
+    if (!this.roomState) return 0;
+    return this.roomState.players.length - 1;
   }
 
   public get currentDrawerPlayer(): Player | undefined {
@@ -168,8 +189,14 @@ export class GameBoardComponent implements OnInit, OnDestroy {
     });
   }
 
-  public showQRCode(): void {
-    alert('QR Code cho phòng: ' + this.roomState?.id);
+  public copyRoomId(): void {
+    if (!this.roomState) return;
+    const roomId = this.roomState.id || (this.roomState as any).roomId;
+    navigator.clipboard.writeText(roomId).then(() => {
+      alert('Đã sao chép mã phòng: ' + roomId);
+    }).catch((err) => {
+      console.error('Không thể sao chép mã phòng: ', err);
+    });
   }
 
   // --- GAME ACTIONS ---

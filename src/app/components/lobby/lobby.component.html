@@ -64,18 +64,38 @@
     <div
       class="lg:col-span-7 flex flex-col border-4 border-white/10 rounded-2xl overflow-hidden shadow-2xl backdrop-blur-md"
     >
-      <!-- Card Header Banner -->
-      <div class="flex border-b-4 border-white/10 bg-slate-950/40 py-4 justify-center items-center">
-        <span class="text-sm font-black uppercase tracking-widest text-green-400">
-          Hồ Sơ Của Bạn
-        </span>
+      <!-- Card Header Banner: Tab selector -->
+      <div class="flex border-b-4 border-white/10 bg-slate-950/40 font-bold">
+        <button
+          (click)="activeTab = 'create'"
+          [ngClass]="{
+            'bg-purple-600/30 font-black border-r-4 border-white/10 text-green-400':
+              activeTab === 'create',
+            'text-slate-400 hover:text-white': activeTab !== 'create',
+          }"
+          class="flex-1 py-3.5 text-xs uppercase tracking-widest transition-all cursor-pointer border-0 outline-none"
+        >
+          Tạo phòng mới
+        </button>
+        <button
+          (click)="activeTab = 'join'"
+          [ngClass]="{
+            'bg-purple-600/30 font-black border-l-4 border-white/10 text-green-400':
+              activeTab === 'join',
+            'text-slate-400 hover:text-white': activeTab !== 'join',
+          }"
+          class="flex-1 py-3.5 text-xs uppercase tracking-widest transition-all cursor-pointer border-0 outline-none"
+          [disabled]="isDirectJoin"
+        >
+          Vào phòng bằng mã
+        </button>
       </div>
 
       <!-- Card Body -->
       <div class="p-7 flex-1 flex flex-col justify-between space-y-6">
         <div class="flex flex-col md:flex-row items-center gap-6">
           <!-- Avatar Block -->
-          <div class="relative group cursor-pointer" (click)="randomizeAvatar()">
+          <div class="relative group cursor-pointer animate-fade-in" (click)="randomizeAvatar()">
             <div
               class="avatar-frame w-28 h-28 rounded-full border-4 border-purple-500 bg-slate-800 flex items-center justify-center p-3 shadow-lg group-hover:scale-105 transition-all relative overflow-hidden"
             >
@@ -94,7 +114,8 @@
           </div>
 
           <!-- Name & Room Configs -->
-          <div class="flex-1 w-full space-y-3">
+          <div class="flex-1 w-full space-y-4">
+            <!-- Nickname input -->
             <div class="space-y-1.5">
               <label class="block text-xs font-extrabold tracking-wide text-purple-200 uppercase"
                 >Nhân vật & biệt danh</label
@@ -107,30 +128,8 @@
               />
             </div>
 
-            <!-- Join Room Section -->
-            <div class="space-y-1.5 pt-1">
-              <label class="block text-xs font-extrabold tracking-wide text-purple-200 uppercase"
-                >Hoặc nhập Mã phòng để tham gia</label
-              >
-              <div class="flex gap-2">
-                <input
-                  type="text"
-                  [(ngModel)]="roomIdToJoin"
-                  [disabled]="isDirectJoin"
-                  class="flex-1 px-4 py-2.5 rounded-xl bg-purple-950/30 border-2 border-purple-800/60 text-white placeholder-purple-800/40 font-bold text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all shadow-inner uppercase disabled:opacity-50 disabled:cursor-not-allowed"
-                  placeholder="MÃ PHÒNG (VD: ABCXYZ)..."
-                />
-                <button
-                  (click)="onJoinRoom()"
-                  class="px-5 py-2.5 bg-green-500 hover:bg-green-600 text-white font-extrabold text-xs rounded-xl active:scale-95 transition-all cursor-pointer shadow-md uppercase tracking-wider"
-                >
-                  Tham gia
-                </button>
-              </div>
-            </div>
-
-            <!-- Mini Settings panel (Mode, Bots, Time) inside card -->
-            <div class="grid grid-cols-2 gap-4 pt-1">
+            <!-- Tab Content: Create Room Settings -->
+            <div *ngIf="activeTab === 'create'" class="grid grid-cols-2 gap-4 animate-fade-in">
               <div class="space-y-1.5 flex flex-col justify-end">
                 <label class="block text-xs font-extrabold tracking-wide text-purple-200 uppercase"
                   >Chế độ chơi</label
@@ -158,17 +157,41 @@
                 </select>
               </div>
             </div>
+
+            <!-- Tab Content: Join Room -->
+            <div *ngIf="activeTab === 'join'" class="space-y-1.5 animate-fade-in">
+              <label class="block text-xs font-extrabold tracking-wide text-purple-200 uppercase"
+                >Mã phòng chơi</label
+              >
+              <input
+                type="text"
+                [(ngModel)]="roomIdToJoin"
+                [disabled]="isDirectJoin"
+                class="w-full px-4 py-3 rounded-xl bg-purple-950/30 border-2 border-purple-800/60 text-white placeholder-purple-800/40 font-bold text-base focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all shadow-inner uppercase disabled:opacity-50 disabled:cursor-not-allowed"
+                placeholder="NHẬP MÃ PHÒNG (VD: ABCXYZ)..."
+              />
+            </div>
           </div>
         </div>
 
         <!-- Big Play Button -->
         <div class="flex justify-center pt-2">
           <button
-            (click)="roomIdToJoin ? onJoinRoom() : onCreateRoom()"
+            *ngIf="activeTab === 'create'"
+            (click)="onCreateRoom()"
             class="play-btn px-10 py-3 bg-white hover:bg-slate-100 font-black text-purple-950 text-lg rounded-full shadow-2xl active:scale-95 transition-all cursor-pointer flex items-center gap-2.5 border-b-6 border-purple-300 shadow-purple-900/30"
           >
             <svg lucidePlay class="w-6 h-6 text-green-500 fill-green-500"></svg> 
-            {{ roomIdToJoin ? 'THAM GIA PHÒNG' : 'BẮT ĐẦU' }}
+            TẠO PHÒNG MỚI
+          </button>
+          
+          <button
+            *ngIf="activeTab === 'join'"
+            (click)="onJoinRoom()"
+            class="play-btn px-10 py-3 bg-white hover:bg-slate-100 font-black text-purple-950 text-lg rounded-full shadow-2xl active:scale-95 transition-all cursor-pointer flex items-center gap-2.5 border-b-6 border-purple-300 shadow-purple-900/30"
+          >
+            <svg lucidePlay class="w-6 h-6 text-green-500 fill-green-500"></svg> 
+            THAM GIA PHÒNG
           </button>
         </div>
       </div>

@@ -20,9 +20,35 @@ export class SocketService {
   private clearDrawingSubject = new Subject<void>();
   public clearDrawingEvent$ = this.clearDrawingSubject.asObservable();
 
+  private getBackendUrl(): string {
+    if (typeof window === 'undefined') {
+      return 'http://localhost:3000';
+    }
+    const hostname = window.location.hostname;
+    const protocol = window.location.protocol;
+
+    // 1. Chạy local dev
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+      return 'http://localhost:3000';
+    }
+
+    // 2. Chia sẻ mạng nội bộ LAN (ví dụ truy cập qua http://192.168.1.15:4200)
+    const ipPattern = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/;
+    if (ipPattern.test(hostname)) {
+      return `${protocol}//${hostname}:3000`;
+    }
+
+    // 3. Môi trường deploy (Production)
+    // Mặc định tự động nhận diện cùng domain deploy.
+    // Nếu deploy Backend ở tên miền khác Frontend (ví dụ: FE ở Netlify, BE ở Render), hãy sửa dòng dưới đây thành URL của Backend (ví dụ: 'https://pguess-api.onrender.com').
+    return `${protocol}//${hostname}`;
+  }
+
   constructor() {
-    // Khởi tạo kết nối tới server NestJS ở cổng 3000 nhưng không tự động kết nối
-    this.socket = io('http://localhost:3000', {
+    const backendUrl = this.getBackendUrl();
+    console.log('Connecting to backend at:', backendUrl);
+    
+    this.socket = io(backendUrl, {
       transports: ['websocket'],
       autoConnect: false
     });
@@ -138,6 +164,10 @@ export class SocketService {
 
   public submitModeBGuess(roomId: string, guess: string): void {
     this.socket.emit('submit_guess', { roomId, guess });
+  }
+
+  public submitDrawing(roomId: string, strokes: DrawStroke[]): void {
+    this.socket.emit('submit_drawing', { roomId, strokes });
   }
 
   /**

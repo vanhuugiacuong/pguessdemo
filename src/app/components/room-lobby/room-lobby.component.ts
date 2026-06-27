@@ -7,7 +7,6 @@ import {
   LucideVolume2,
   LucideVolumeX,
   LucideCopy,
-  LucideQrCode,
   LucideArrowLeft
 } from '@lucide/angular';
 
@@ -21,7 +20,6 @@ import {
     LucideVolume2,
     LucideVolumeX,
     LucideCopy,
-    LucideQrCode,
     LucideArrowLeft
   ],
   templateUrl: './room-lobby.component.html'
@@ -41,7 +39,7 @@ export class RoomLobbyComponent {
   @Output() startGame = new EventEmitter<void>();
   @Output() quit = new EventEmitter<void>();
   @Output() copyInviteLink = new EventEmitter<void>();
-  @Output() showQRCode = new EventEmitter<void>();
+  @Output() copyRoomId = new EventEmitter<void>();
 
   public activeSettingsTab: 'preset' | 'custom' = 'preset';
   public isMuted = false;
@@ -78,7 +76,7 @@ export class RoomLobbyComponent {
     this.copyInviteLink.emit();
   }
 
-  public showQRCodeAction(): void {
-    this.showQRCode.emit();
+  public copyRoomIdAction(): void {
+    this.copyRoomId.emit();
   }
 }

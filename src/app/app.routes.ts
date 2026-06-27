@@ -6,4 +6,5 @@ export const routes: Routes = [
   { path: '', component: LobbyComponent },
   { path: 'lobby/:roomId', component: RoomComponent },
   { path: '**', redirectTo: '' }
+  
 ];

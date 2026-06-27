@@ -33,7 +33,14 @@ export class GalleryRevealComponent {
 
   public get drawingPlayers(): Player[] {
     if (!this.roomState) return [];
-    // Everyone who is NOT the guesser
+    // Trong lúc chơi (lượt đoán), người đoán chỉ được nhìn bức tranh cuối cùng trong chuỗi vẽ truyền tay
+    if (this.roomState.phase === 'PLAYING') {
+      const lastDrawerIndex = this.roomState.players.length - 2;
+      if (lastDrawerIndex >= 0) {
+        return [this.roomState.players[lastDrawerIndex]];
+      }
+    }
+    // Khi kết thúc game/reveal, hiển thị toàn bộ chuỗi tranh vẽ của các họa sĩ
     return this.roomState.players.filter((p) => p.id !== this.roomState.guesserId);
   }
 

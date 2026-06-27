@@ -22,6 +22,7 @@ import { Subscription } from 'rxjs';
 export class CanvasComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('drawingCanvas', { static: false }) canvasRef!: ElementRef<HTMLCanvasElement>;
 
+  @Input() bareCanvas = false;
   @Input() readOnly = false;
   @Input() streamRealTime = false; // Subscribe to real-time mock drawing events
   @Input() set externalStrokes(strokes: DrawStroke[] | undefined) {
@@ -135,6 +136,7 @@ export class CanvasComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.isDoneDrawing) return;
     this.isDoneDrawing = true;
     this.stopDrawing();
+    this.gameState.submitDrawing(this.strokes);
   }
 
   ngAfterViewInit(): void {

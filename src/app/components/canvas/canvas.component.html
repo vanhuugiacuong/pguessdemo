@@ -1,3 +1,12 @@
+@if (bareCanvas) {
+  <div class="w-full h-full flex items-center justify-center bg-white relative">
+    <canvas #drawingCanvas class="block touch-none cursor-default z-10 relative"
+      (mousedown)="onMouseDown($event)" (mousemove)="onMouseMove($event)" (mouseup)="onMouseUp()"
+      (mouseleave)="onMouseUp()" (touchstart)="onTouchStart($event)" (touchmove)="onTouchMove($event)"
+      (touchend)="onTouchEnd()">
+    </canvas>
+  </div>
+} @else {
 <div class="canvas-workspace-wrapper flex flex-col w-full h-full select-none justify-center items-center">
   <!-- Container slate table -->
   <div
@@ -311,3 +320,4 @@
     }
   </div>
 </div>
+}
