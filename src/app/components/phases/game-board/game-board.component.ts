@@ -1,24 +1,22 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { GameStateService } from '../../services/game-state.service';
-import { RoomState, Player, GamePhase, DrawStroke } from '../../models/game.model';
+import { GameStateService } from '../../../services/game-state.service';
+import { RoomState, Player, DrawStroke } from '../../../models/game.model';
 import { Subscription } from 'rxjs';
-import { CanvasComponent } from '../canvas/canvas.component';
-import { ChatComponent } from '../chat/chat.component';
-import { GalleryRevealComponent } from '../gallery-reveal/gallery-reveal.component';
 import { RoomLobbyComponent } from '../room-lobby/room-lobby.component';
+import { WordSelectionComponent } from '../word-selection/word-selection.component';
+import { GamePlayingComponent } from '../game-playing/game-playing.component';
+import { GameRevealComponent } from '../game-reveal/game-reveal.component';
 
 @Component({
   selector: 'app-game-board',
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule,
-    CanvasComponent,
-    ChatComponent,
-    GalleryRevealComponent,
-    RoomLobbyComponent
+    RoomLobbyComponent,
+    WordSelectionComponent,
+    GamePlayingComponent,
+    GameRevealComponent
   ],
   templateUrl: './game-board.component.html',
   styleUrl: './game-board.component.css',
@@ -34,7 +32,6 @@ export class GameBoardComponent implements OnInit, OnDestroy {
   public cardZoomState: 'normal' | 'zoomed' = 'normal';
 
   public wordChoices: string[] = [];
-  public customWordInput = '';
 
   constructor(private gameState: GameStateService) {}
 
@@ -53,7 +50,6 @@ export class GameBoardComponent implements OnInit, OnDestroy {
         }
       } else {
         this.wordChoices = [];
-        this.customWordInput = '';
       }
     });
   }
@@ -86,11 +82,8 @@ export class GameBoardComponent implements OnInit, OnDestroy {
     this.gameState.selectWord(word);
   }
 
-  public onConfirmCustomWord(): void {
-    const word = this.customWordInput.trim();
-    if (!word) return;
+  public onConfirmCustomWord(word: string): void {
     this.gameState.selectWord(word);
-    this.customWordInput = '';
   }
 
   ngOnDestroy(): void {

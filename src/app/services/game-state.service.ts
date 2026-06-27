@@ -1,12 +1,16 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { Observable } from 'rxjs';
-import { RoomState, ChatMessage, DrawStroke, GameSettings } from '../models/game.model';
-import { MockServerService } from './mock-server.service';
+import { GameSettings, RoomState, ChatMessage, DrawStroke } from '../models/game.model';
 import { SocketService } from './socket.service';
+import { Observable } from 'rxjs';
+
+const WORD_BANK = [
+  'house', 'cat', 'tree', 'sun', 'car', 'flower', 'fish', 'cup', 'star', 'apple',
+  'boat', 'bird', 'cake', 'hat', 'cloud', 'heart', 'moon', 'ball', 'book', 'face'
+];
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class GameStateService {
   public roomState$: Observable<RoomState | null>;
@@ -14,12 +18,11 @@ export class GameStateService {
   public drawingStream$: Observable<DrawStroke>;
   public clearDrawingEvent$: Observable<void>;
 
-  private playerName: string = 'Player 1';
-  private playerAvatar: string = '2.svg';
   private currentRoomId: string | null = null;
+  private playerName = 'Player 1';
+  private playerAvatar = 'avatar_1.png';
 
   constructor(
-    private mockServer: MockServerService,
     private socketService: SocketService,
     private router: Router
   ) {
@@ -53,7 +56,7 @@ export class GameStateService {
   }
 
   public getWordBank(): string[] {
-    return this.mockServer.getWordBank();
+    return WORD_BANK;
   }
 
   public getMyPlayerId(): string | null {
@@ -75,16 +78,12 @@ export class GameStateService {
   public updateRoomSettings(settings: Partial<GameSettings>): void {
     if (this.currentRoomId) {
       this.socketService.updateRoomSettings(this.currentRoomId, settings);
-    } else {
-      this.mockServer.updateRoomSettings(settings);
     }
   }
 
   public startGame(): void {
     if (this.currentRoomId) {
       this.socketService.startGame(this.currentRoomId);
-    } else {
-      this.mockServer.startGame();
     }
   }
 
@@ -97,49 +96,36 @@ export class GameStateService {
   public submitGuess(text: string): void {
     if (this.currentRoomId) {
       this.socketService.sendMessage(this.currentRoomId, text);
-    } else {
-      this.mockServer.sendMessage(text);
     }
   }
 
   public submitModeBGuess(guess: string): void {
     if (this.currentRoomId) {
       this.socketService.submitModeBGuess(this.currentRoomId, guess);
-    } else {
-      this.mockServer.submitModeBGuess(guess);
     }
   }
 
   public submitDrawing(strokes: DrawStroke[]): void {
     if (this.currentRoomId) {
       this.socketService.submitDrawing(this.currentRoomId, strokes);
-    } else {
-      // Mock server could just save strokes to the active drawer
-      this.mockServer.submitDrawing(strokes);
     }
   }
 
   public sendStroke(stroke: DrawStroke): void {
     if (this.currentRoomId) {
       this.socketService.sendStroke(this.currentRoomId, stroke);
-    } else {
-      this.mockServer.sendDrawingStroke(stroke);
     }
   }
 
   public clearCanvas(): void {
     if (this.currentRoomId) {
       this.socketService.clearCanvas(this.currentRoomId);
-    } else {
-      this.mockServer.clearDrawing();
     }
   }
 
   public resetRoom(): void {
     if (this.currentRoomId) {
       this.socketService.leaveRoom(this.currentRoomId);
-    } else {
-      this.mockServer.resetRoom();
     }
   }
 }

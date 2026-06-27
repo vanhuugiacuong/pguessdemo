@@ -2,8 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { GameStateService } from '../../services/game-state.service';
-import { GameSettings, GameMode } from '../../models/game.model';
+import { GameStateService } from '../../../services/game-state.service';
+import { GameSettings, GameMode } from '../../../models/game.model';
 import {
   LucidePlay,
   LucideRefreshCw,

@@ -8,8 +8,8 @@ import {
   OnInit,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { DrawStroke, DrawPoint, RoomState } from '../../models/game.model';
-import { GameStateService } from '../../services/game-state.service';
+import { DrawStroke, DrawPoint, RoomState } from '../../../models/game.model';
+import { GameStateService } from '../../../services/game-state.service';
 import { Subscription } from 'rxjs';
 
 @Component({

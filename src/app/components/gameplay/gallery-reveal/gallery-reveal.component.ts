@@ -1,8 +1,8 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { GameStateService } from '../../services/game-state.service';
-import { RoomState, Player } from '../../models/game.model';
+import { GameStateService } from '../../../services/game-state.service';
+import { RoomState, Player } from '../../../models/game.model';
 import { CanvasComponent } from '../canvas/canvas.component';
 
 @Component({

@@ -1,8 +1,8 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { GameStateService } from '../../services/game-state.service';
+import { GameStateService } from '../../../services/game-state.service';
 import { LobbyComponent } from '../lobby/lobby.component';
-import { GameBoardComponent } from '../game-board/game-board.component';
+import { GameBoardComponent } from '../../phases/game-board/game-board.component';
 
 @Component({
   selector: 'app-room-container',

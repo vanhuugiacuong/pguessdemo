@@ -1,0 +1,74 @@
+<div
+  class="game-container w-full min-h-screen bg-transparent text-white flex flex-col font-sans transition-all duration-300"
+>
+  <div
+    [ngClass]="{
+      'flex-1 flex flex-col justify-between w-full min-h-0': true,
+      'overflow-y-auto': !(isPlaying && isUserDrawer),
+      'p-6': !isLobby && !(isPlaying && isUserDrawer),
+      'p-0': isPlaying && isUserDrawer,
+      'p-4 md:p-6 max-w-5xl mx-auto h-[95dvh]': isLobby,
+    }"
+  >
+    <!-- 1. LOBBY PHASE -->
+    @if (isLobby) {
+      <app-room-lobby
+        [roomState]="roomState"
+        [myPlayerId]="myPlayerId"
+        [isHost]="isHost"
+        [selectedGameMode]="selectedGameMode"
+        [currentBotCount]="currentBotCount"
+        [playerSlots]="playerSlots"
+        (changeMode)="changeMode($event)"
+        (changeTimeLimit)="changeTimeLimit($event)"
+        (changeMaxPlayers)="changeMaxPlayers($event)"
+        (changeBotCount)="changeBotCount($event)"
+        (startGame)="onStartGame()"
+        (quit)="onQuit()"
+        (copyInviteLink)="copyInviteLink()"
+        (copyRoomId)="copyRoomId()"
+        class="flex-1 flex flex-col justify-between h-full space-y-4"
+      ></app-room-lobby>
+    }
+
+    <!-- 1.5. WORD SELECTION PHASE -->
+    @if (isWordSelection) {
+      <app-word-selection
+        [roomState]="roomState"
+        [wordChoices]="wordChoices"
+        [isWordSelector]="isWordSelector"
+        [wordSelectorName]="wordSelectorName"
+        (selectWordChoice)="onSelectWordChoice($event)"
+        (confirmCustomWord)="onConfirmCustomWord($event)"
+      ></app-word-selection>
+    }
+
+    <!-- 2. PLAYING PHASE -->
+    @if (isPlaying) {
+      <app-game-playing
+        [roomState]="roomState"
+        [myPlayerId]="myPlayerId"
+        [isUserDrawer]="isUserDrawer"
+        [isUserGuesser]="isUserGuesser"
+        [currentDrawerPlayer]="currentDrawerPlayer"
+        [previousPlayerDrawing]="previousPlayerDrawing"
+        [isDrawingTurn]="isDrawingTurn"
+        [currentTurnPlayerName]="currentTurnPlayerName"
+        [totalDrawingTurns]="totalDrawingTurns"
+        (quit)="onQuit()"
+      ></app-game-playing>
+    }
+
+    <!-- 3. REVEAL / SCOREBOARD BREAK PHASE -->
+    @if (isReveal) {
+      <app-game-reveal
+        [roomState]="roomState"
+        [myPlayerId]="myPlayerId"
+        [currentDrawerPlayer]="currentDrawerPlayer"
+        [albumSteps]="albumSteps"
+        [sortedPlayers]="sortedPlayers"
+        (quit)="onQuit()"
+      ></app-game-reveal>
+    }
+  </div>
+</div>
