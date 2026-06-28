@@ -1,6 +1,37 @@
 <div
   class="game-container w-full min-h-screen bg-transparent text-white flex flex-col font-sans transition-all duration-300"
 >
+  @if (showRoundIntro) {
+    <!-- Round Intro Screen -->
+    <div class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-gradient-to-br from-[#1e3a8a] via-[#581c87] to-[#701a75] text-white select-none animate-fade-in">
+      <div class="text-center space-y-6">
+        <!-- Round number badge -->
+        <div class="inline-block px-6 py-2 bg-yellow-500 text-slate-950 font-black text-sm uppercase tracking-widest rounded-full shadow-lg border-2 border-white animate-bounce">
+          VÒNG {{ roomState?.roundNumber || 1 }}
+        </div>
+        
+        <!-- Title -->
+        <h1 class="text-4xl md:text-6xl font-black uppercase tracking-widest drop-shadow-[0_4px_8px_rgba(0,0,0,0.5)] animate-pulse">
+          TRÒ CHƠI BẮT ĐẦU!
+        </h1>
+        
+        <!-- Subtitle -->
+        <p class="text-base md:text-lg font-extrabold text-purple-200">
+          @if (isWordSelector) {
+            Chuẩn bị chọn từ khóa của bạn...
+          } @else {
+            Chuẩn bị nhận từ khóa từ đồng đội...
+          }
+        </p>
+
+        <!-- Spinner -->
+        <div class="mt-8 flex justify-center">
+          <div class="w-14 h-14 border-4 border-dashed border-yellow-400 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      </div>
+    </div>
+  }
+
   <div
     [ngClass]="{
       'flex-1 flex flex-col justify-between w-full min-h-0': true,
@@ -15,6 +46,7 @@
       <app-room-lobby
         [roomState]="roomState"
         [myPlayerId]="myPlayerId"
+        [loading]="(loading$ | async) ?? false"
         [isHost]="isHost"
         [selectedGameMode]="selectedGameMode"
         [currentBotCount]="currentBotCount"

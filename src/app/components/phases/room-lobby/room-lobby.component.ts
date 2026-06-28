@@ -27,6 +27,7 @@ import {
 export class RoomLobbyComponent {
   @Input() roomState: RoomState | null = null;
   @Input() myPlayerId: string | null = null;
+  @Input() loading = false;
   @Input() isHost = false;
   @Input() selectedGameMode: 'A' | 'B' = 'A';
   @Input() currentBotCount = 0;

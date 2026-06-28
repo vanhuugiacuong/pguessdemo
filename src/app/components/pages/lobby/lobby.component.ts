@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { GameStateService } from '../../../services/game-state.service';
 import { GameSettings, GameMode } from '../../../models/game.model';
+import { Observable } from 'rxjs';
 import {
   LucidePlay,
   LucideRefreshCw,
@@ -40,6 +41,8 @@ interface CarouselStep {
   styleUrl: './lobby.component.css',
 })
 export class LobbyComponent implements OnInit {
+  public loading$: Observable<boolean>;
+
   public nickname = '';
   public selectedMode: GameMode = 'A';
   public botCount = 3;
@@ -101,7 +104,9 @@ export class LobbyComponent implements OnInit {
   constructor(
     private gameState: GameStateService,
     private route: ActivatedRoute
-  ) {}
+  ) {
+    this.loading$ = this.gameState.loading$;
+  }
 
   ngOnInit(): void {
     const funnyNames = [

@@ -317,4 +317,14 @@
       </div>
     </div>
   </div>
+
+  <!-- Loading overlay in glassmorphism style -->
+  @if (loading$ | async) {
+    <div class="absolute inset-0 z-50 flex flex-col items-center justify-center bg-slate-950/80 backdrop-blur-md rounded-lg select-none">
+      <div class="w-16 h-16 border-4 border-dashed border-green-500 border-t-transparent rounded-full animate-spin"></div>
+      <h3 class="mt-4 text-xl font-bold text-slate-100 uppercase tracking-widest animate-pulse">
+        Đang xử lý kết nối...
+      </h3>
+    </div>
+  }
 </div>

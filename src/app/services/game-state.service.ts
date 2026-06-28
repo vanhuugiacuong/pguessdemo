@@ -3,6 +3,9 @@ import { Router } from '@angular/router';
 import { GameSettings, RoomState, ChatMessage, DrawStroke } from '../models/game.model';
 import { SocketService } from './socket.service';
 import { Observable } from 'rxjs';
+import { Store } from '@ngrx/store';
+import * as RoomActions from '../store/room/room.actions';
+import * as RoomSelectors from '../store/room/room.selectors';
 
 const WORD_BANK = [
   'house', 'cat', 'tree', 'sun', 'car', 'flower', 'fish', 'cup', 'star', 'apple',
@@ -17,6 +20,8 @@ export class GameStateService {
   public chatMessages$: Observable<ChatMessage[]>;
   public drawingStream$: Observable<DrawStroke>;
   public clearDrawingEvent$: Observable<void>;
+  public loading$: Observable<boolean>;
+  public error$: Observable<string | null>;
 
   private currentRoomId: string | null = null;
   private playerName = 'Player 1';
@@ -24,10 +29,14 @@ export class GameStateService {
 
   constructor(
     private socketService: SocketService,
-    private router: Router
+    private router: Router,
+    private store: Store
   ) {
     this.roomState$ = this.socketService.roomState$;
     this.chatMessages$ = this.socketService.chatMessages$;
+    this.loading$ = this.store.select(RoomSelectors.selectLoading);
+    this.error$ = this.store.select(RoomSelectors.selectError);
+    
     this.drawingStream$ = this.socketService.drawingStream$;
     this.clearDrawingEvent$ = this.socketService.clearDrawingEvent$;
 
@@ -66,13 +75,13 @@ export class GameStateService {
   public createRoom(playerName: string, avatar: string, settings: GameSettings): void {
     this.playerName = playerName.trim() || 'Player 1';
     this.playerAvatar = avatar;
-    this.socketService.createRoom(this.playerName, avatar, settings);
+    this.store.dispatch(RoomActions.createRoom({ playerName, avatar, settings }));
   }
 
   public joinRoom(roomId: string, playerName: string, avatar: string): void {
     this.playerName = playerName.trim() || 'Player 1';
     this.playerAvatar = avatar;
-    this.socketService.joinRoom(roomId, this.playerName, avatar);
+    this.store.dispatch(RoomActions.joinRoom({ roomId, playerName, avatar }));
   }
 
   public updateRoomSettings(settings: Partial<GameSettings>): void {
@@ -83,7 +92,7 @@ export class GameStateService {
 
   public startGame(): void {
     if (this.currentRoomId) {
-      this.socketService.startGame(this.currentRoomId);
+      this.store.dispatch(RoomActions.startGame({ roomId: this.currentRoomId }));
     }
   }
 
@@ -124,6 +133,7 @@ export class GameStateService {
   }
 
   public resetRoom(): void {
+    this.store.dispatch(RoomActions.resetRoom());
     if (this.currentRoomId) {
       this.socketService.leaveRoom(this.currentRoomId);
     }

@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { GameStateService } from '../../../services/game-state.service';
 import { RoomState, Player, DrawStroke } from '../../../models/game.model';
-import { Subscription } from 'rxjs';
+import { Subscription, Observable } from 'rxjs';
 import { RoomLobbyComponent } from '../room-lobby/room-lobby.component';
 import { WordSelectionComponent } from '../word-selection/word-selection.component';
 import { GamePlayingComponent } from '../game-playing/game-playing.component';
@@ -23,6 +23,8 @@ import { GameRevealComponent } from '../game-reveal/game-reveal.component';
 })
 export class GameBoardComponent implements OnInit, OnDestroy {
   public roomState: RoomState | null = null;
+  public loading$: Observable<boolean>;
+  public showRoundIntro = false;
   private subscription!: Subscription;
 
   public activeSettingsTab: 'preset' | 'custom' = 'preset';
@@ -33,10 +35,25 @@ export class GameBoardComponent implements OnInit, OnDestroy {
 
   public wordChoices: string[] = [];
 
-  constructor(private gameState: GameStateService) {}
+  constructor(private gameState: GameStateService) {
+    this.loading$ = this.gameState.loading$;
+  }
 
   ngOnInit(): void {
+    let previousPhase: string | null = null;
     this.subscription = this.gameState.roomState$.subscribe((state) => {
+      if (state) {
+        if (previousPhase === 'LOBBY' && state.phase === 'WORD_SELECTION') {
+          this.showRoundIntro = true;
+          setTimeout(() => {
+            this.showRoundIntro = false;
+          }, 3000);
+        }
+        previousPhase = state.phase;
+      } else {
+        previousPhase = null;
+      }
+
       this.roomState = state;
       if (state && state.phase === 'WORD_SELECTION') {
         if (this.isWordSelector && this.wordChoices.length === 0) {
