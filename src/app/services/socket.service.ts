@@ -11,6 +11,9 @@ export class SocketService {
   private roomStateSubject = new BehaviorSubject<RoomState | null>(null);
   public roomState$ = this.roomStateSubject.asObservable();
 
+  private errorSubject = new Subject<string | null>();
+  public error$ = this.errorSubject.asObservable();
+
   private chatMessagesSubject = new BehaviorSubject<ChatMessage[]>([]);
   public chatMessages$ = this.chatMessagesSubject.asObservable();
 
@@ -117,6 +120,8 @@ export class SocketService {
         this.roomStateSubject.next(normalizedState);
       } else if (response && response.error) {
         console.error('Create room error:', response.error);
+        this.errorSubject.next(response.error);
+        alert(response.error);
       }
     });
   }
@@ -138,6 +143,8 @@ export class SocketService {
         this.roomStateSubject.next(normalizedState);
       } else if (response && response.error) {
         console.error('Join room error:', response.error);
+        this.errorSubject.next(response.error);
+        alert(response.error);
       }
     });
   }
@@ -149,6 +156,7 @@ export class SocketService {
   public startGame(roomId: string): void {
     this.socket.emit('start_game', { roomId }, (response: any) => {
       if (response && response.error) {
+        this.errorSubject.next(response.error);
         alert(response.error);
       }
     });

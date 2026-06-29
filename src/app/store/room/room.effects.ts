@@ -15,6 +15,12 @@ export class RoomEffects {
     )
   );
 
+  syncError$ = createEffect(() =>
+    this.socketService.error$.pipe(
+      map((error) => RoomActions.setError({ error }))
+    )
+  );
+
   createRoom$ = createEffect(
     () =>
       this.actions$.pipe(

@@ -13,7 +13,7 @@ import { Subscription } from 'rxjs';
 })
 export class App implements OnInit, OnDestroy {
   private roomSubscription!: Subscription;
-  public currentGradient = 'linear-gradient(135deg, #1e3a8a 0%, #581c87 50%, #701a75 100%)';
+  public currentGradient = 'linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%)';
 
   constructor(private gameState: GameStateService) {}
 
@@ -21,14 +21,14 @@ export class App implements OnInit, OnDestroy {
     this.roomSubscription = this.gameState.roomState$.subscribe((state) => {
       if (!state) {
         // Home screen
-        this.currentGradient = 'linear-gradient(135deg, #1e3a8a 0%, #581c87 50%, #701a75 100%)';
+        this.currentGradient = 'linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%)';
         return;
       }
 
       switch (state.phase) {
         case 'LOBBY':
           // Room Lobby
-          this.currentGradient = 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #c026d3 100%)';
+          this.currentGradient = 'linear-gradient(135deg, #818cf8 0%, #c084fc 50%, #f472b6 100%)';
           break;
         case 'WORD_SELECTION':
           // Word selection: Capture 2 orange-to-pink
@@ -55,7 +55,7 @@ export class App implements OnInit, OnDestroy {
           this.currentGradient = 'linear-gradient(135deg, #db2777 0%, #e11d48 50%, #f59e0b 100%)';
           break;
         default:
-          this.currentGradient = 'linear-gradient(135deg, #1e3a8a 0%, #581c87 50%, #701a75 100%)';
+          this.currentGradient = 'linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%)';
       }
     });
   }
