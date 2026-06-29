@@ -1,0 +1,126 @@
+<div class="flex-1 flex flex-col items-center justify-center py-6 px-4 w-full h-full min-h-0 select-none animate-fade-in">
+  <!-- Gartic Frame Container -->
+  <div class="w-full max-w-4xl aspect-[8/5] gartic-frame p-8 flex flex-col justify-between relative shadow-2xl">
+    
+    <!-- Top left: Round progress -->
+    <div class="absolute top-6 left-8 text-white font-black text-2xl tracking-wide select-none drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
+      {{ roomState?.roundNumber || 1 }}/{{ roomState?.maxRounds || 1 }}
+    </div>
+
+    <!-- Top Center: PGuess Logo in Gartic Phone Shield Style -->
+    <div class="absolute top-6 left-1/2 -translate-x-1/2 flex flex-col items-center select-none scale-75 md:scale-90 z-20">
+      <div class="logo-shield bg-slate-950 px-6 py-2 rounded-[2rem] border-[4px] border-slate-900 shadow-2xl flex flex-col items-center relative">
+        <span class="absolute top-1.5 left-4 text-xs animate-pulse">⚡</span>
+        <span class="absolute bottom-1.5 right-4 text-xs animate-pulse">✨</span>
+        <span class="text-sm font-black italic tracking-wider text-pink-500 uppercase drop-shadow-[0_2px_0_rgba(0,0,0,1)] leading-none">P</span>
+        <span class="text-2xl font-black tracking-wide text-white uppercase drop-shadow-[0_4px_0_rgba(0,0,0,1)] leading-none mt-0.5 flex items-center gap-0.5">
+          Gu<span class="logo-o w-5 h-5 border-[3px] border-dashed border-white rounded-full inline-flex items-center justify-center animate-spin-slow text-sm pb-0.5">e</span>ss
+        </span>
+      </div>
+    </div>
+
+    <!-- Top Right: SVG Circular Countdown Timer -->
+    <div class="absolute top-4 right-8 flex items-center justify-center z-20">
+      <div class="relative w-12 h-12 flex items-center justify-center bg-white rounded-full border-4 border-slate-950 shadow-[3px_3px_0px_rgba(0,0,0,1)]">
+        <svg class="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 36 36">
+          <path
+            class="text-red-500 stroke-current"
+            stroke-width="4"
+            stroke-linecap="round"
+            fill="none"
+            [attr.stroke-dasharray]="getTimerDashArray()"
+            d="M18 2.0845
+              a 15.9155 15.9155 0 0 1 0 31.831
+              a 15.9155 15.9155 0 0 1 0 -31.831"
+          />
+        </svg>
+        <span class="text-xs font-black text-slate-950 z-10">{{ roomState?.timeLeft }}</span>
+      </div>
+    </div>
+
+    <!-- Middle layout: Avatar, Title and Form -->
+    <div class="flex-1 flex flex-col items-center justify-center mt-12 space-y-4">
+      
+      <!-- Bird Avatar Illustration (1.png is the cartoon bird writing prompt) -->
+      <div class="w-36 h-36 flex items-center justify-center relative select-none">
+        <img
+          src="/assets/ilust_png/1.png"
+          alt="Avatar illustration"
+          class="w-full h-full object-contain filter drop-shadow-[0_8px_16px_rgba(0,0,0,0.4)]"
+        />
+      </div>
+
+      <!-- Content for Selector (the one choosing the word) -->
+      @if (isWordSelector) {
+        <div class="w-full flex flex-col items-center space-y-3">
+          
+          <!-- Title styled like VIẾT MỘT CÂU -->
+          <h2 class="text-2xl font-black uppercase tracking-widest gartic-title text-center">
+            @if (roomState?.settings?.mode === 'B') {
+              VIẾT MỘT CÂU
+            } @else {
+              CHỌN TỪ KHÓA
+            }
+          </h2>
+
+          <!-- Suggested word choices (horizontal pill buttons) -->
+          <div class="flex flex-wrap items-center justify-center gap-3 w-full max-w-lg py-1">
+            @for (w of wordChoices; track w) {
+              <button
+                (click)="onSelectWord(w)"
+                class="px-5 py-2 bg-[#4ce0aa] hover:bg-[#3cd09a] text-slate-950 font-black rounded-full border-3 border-slate-900 shadow-[3px_3px_0px_rgba(0,0,0,1)] active:scale-95 transition-all text-xs cursor-pointer flex items-center gap-1.5"
+              >
+                💡 {{ w }}
+              </button>
+            }
+          </div>
+
+          <!-- Form for custom keyword -->
+          <form (submit)="onSubmitCustomWord(); $event.preventDefault()" class="flex items-center gap-3 w-full max-w-lg mt-2">
+            <input
+              type="text"
+              [(ngModel)]="customWordInput"
+              name="customWord"
+              placeholder="Kangaroo hồng nhảy nhót"
+              autocomplete="off"
+              class="flex-1 px-4 py-3 gartic-input text-sm placeholder-white/45"
+            />
+            
+            <!-- Done button styled with lavender background, dark purple outline and SVG checkmark -->
+            <button
+              type="submit"
+              class="px-6 py-3 gartic-done-btn text-sm uppercase tracking-wide cursor-pointer"
+            >
+              <!-- Green checkmark circle icon -->
+              <div class="w-5 h-5 rounded-full bg-emerald-500 border-2 border-[#1e0b36] flex items-center justify-center text-[10px] text-white shrink-0">
+                ✓
+              </div>
+              Xong!
+            </button>
+          </form>
+        </div>
+      }
+
+      <!-- Content for Spectator/Other players (waiting) -->
+      @if (!isWordSelector) {
+        <div class="w-full flex flex-col items-center space-y-3">
+          
+          <!-- Waiting Status -->
+          <h2 class="text-2xl font-black uppercase tracking-widest gartic-title text-center">
+            ĐANG CHỜ TỪ KHÓA
+          </h2>
+          
+          <div class="py-2.5 px-6 flex flex-col items-center justify-center space-y-2 max-w-md bg-black/10 rounded-2xl border border-white/5">
+            <div class="flex items-center gap-2 text-slate-300 font-extrabold text-sm animate-pulse">
+              <div class="w-4 h-4 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin"></div>
+              <span>Đang chờ {{ wordSelectorName }} chọn từ khóa...</span>
+            </div>
+            <p class="text-[11px] text-slate-400 italic text-center font-medium">
+              Sau khi từ khóa được chọn, lượt vẽ/đoán sẽ chính thức bắt đầu!
+            </p>
+          </div>
+
+        </div>
+      }
+  </div>
+</div>

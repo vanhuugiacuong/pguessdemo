@@ -64,29 +64,30 @@
     <div
       class="lg:col-span-7 flex flex-col border-4 border-white/10 rounded-2xl overflow-hidden shadow-2xl backdrop-blur-md"
     >
-      <!-- Tabs Header -->
-      <div class="flex border-b-4 border-white/10 bg-slate-950/40">
+      <!-- Card Header Banner: Tab selector -->
+      <div class="flex border-b-4 border-white/10 bg-slate-950/40 font-bold">
         <button
-          (click)="setTab('anon')"
+          (click)="activeTab = 'create'"
           [ngClass]="{
-            'tab-active bg-purple-600/30 font-extrabold border-r-4 border-white/10 text-green-450':
-              activeTab === 'anon',
-            'text-slate-300 font-bold hover:text-white': activeTab !== 'anon',
+            'bg-purple-600/30 font-black border-r-4 border-white/10 text-green-400':
+              activeTab === 'create',
+            'text-slate-400 hover:text-white': activeTab !== 'create',
           }"
-          class="flex-1 py-3 text-sm uppercase tracking-wider transition-all cursor-pointer"
+          class="flex-1 py-3.5 text-xs uppercase tracking-widest transition-all cursor-pointer border-0 outline-none"
         >
-          Ẩn Danh
+          Tạo phòng mới
         </button>
         <button
-          (click)="setTab('auth')"
+          (click)="activeTab = 'join'"
           [ngClass]="{
-            'tab-active bg-purple-600/30 font-extrabold border-l-4 border-white/10 text-green-400':
-              activeTab === 'auth',
-            'text-slate-300 font-bold hover:text-white': activeTab !== 'auth',
+            'bg-purple-600/30 font-black border-l-4 border-white/10 text-green-400':
+              activeTab === 'join',
+            'text-slate-400 hover:text-white': activeTab !== 'join',
           }"
-          class="flex-1 py-4 text-sm uppercase tracking-wider transition-all cursor-pointer"
+          class="flex-1 py-3.5 text-xs uppercase tracking-widest transition-all cursor-pointer border-0 outline-none"
+          [disabled]="isDirectJoin"
         >
-          Đã Xác Thực
+          Vào phòng bằng mã
         </button>
       </div>
 
@@ -94,7 +95,7 @@
       <div class="p-7 flex-1 flex flex-col justify-between space-y-6">
         <div class="flex flex-col md:flex-row items-center gap-6">
           <!-- Avatar Block -->
-          <div class="relative group cursor-pointer" (click)="randomizeAvatar()">
+          <div class="relative group cursor-pointer animate-fade-in" (click)="randomizeAvatar()">
             <div
               class="avatar-frame w-28 h-28 rounded-full border-4 border-purple-500 bg-slate-800 flex items-center justify-center p-3 shadow-lg group-hover:scale-105 transition-all relative overflow-hidden"
             >
@@ -113,47 +114,95 @@
           </div>
 
           <!-- Name & Room Configs -->
-          <div class="flex-1 w-full space-y-3">
-            <div class="space-y-1">
-              <label class="block text-xs font-black tracking-widest text-slate-200 uppercase"
-                >Chọn một nhân vật và biệt danh</label
+          <div class="flex-1 w-full space-y-4">
+            <!-- Nickname input -->
+            <div class="space-y-1.5">
+              <label class="block text-xs font-extrabold tracking-wide text-purple-200 uppercase"
+                >Nhân vật & biệt danh</label
               >
               <input
                 type="text"
                 [(ngModel)]="nickname"
-                class="w-full px-4 py-3 rounded-xl bg-purple-950/20 border-2 border-purple-800/60 text-white placeholder-purple-800/40 font-bold text-lg focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all"
+                class="w-full px-4 py-3 rounded-xl bg-purple-950/30 border-2 border-purple-800/60 text-white placeholder-purple-800/40 font-bold text-base focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all shadow-inner"
                 placeholder="Nhập biệt danh..."
               />
             </div>
 
-            <!-- Mini Settings panel (Mode, Bots, Time) inside card -->
-            <div class="grid grid-cols-2 gap-3 pt-1">
-              <div class="space-y-0.5">
-                <label class="block text-[11px] font-black tracking-wider text-slate-300 uppercase"
+            <!-- Tab Content: Create Room Settings -->
+            <div *ngIf="activeTab === 'create'" class="grid grid-cols-2 gap-4 animate-fade-in">
+              <div class="space-y-1.5 flex flex-col justify-end">
+                <label class="block text-xs font-extrabold tracking-wide text-purple-200 uppercase"
                   >Chế độ chơi</label
                 >
                 <select
                   [(ngModel)]="selectedMode"
-                  class="w-full px-3 py-1.5 rounded-lg bg-purple-950/30 border border-purple-900/50 text-xs font-bold text-white focus:outline-none transition-all cursor-pointer"
+                  class="w-full px-3 py-2.5 rounded-xl bg-purple-950/40 border-2 border-purple-800/60 text-sm font-bold text-white focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all cursor-pointer shadow-inner"
                 >
-                  <option value="A">Mode A: Skribbl</option>
-                  <option value="B">Mode B: Ice Breaker</option>
+                  <option value="A" class="bg-purple-950 text-white">Chế độ A: Skribbl</option>
+                  <option value="B" class="bg-purple-950 text-white">Chế độ B: Ice Breaker</option>
                 </select>
               </div>
 
-              <div class="space-y-0.5">
-                <label class="block text-[11px] font-black tracking-wider text-slate-300 uppercase"
+              <div class="space-y-1.5 flex flex-col justify-end">
+                <label class="block text-xs font-extrabold tracking-wide text-purple-200 uppercase"
                   >Thời gian vẽ</label
                 >
                 <select
                   [(ngModel)]="drawTimeLimit"
-                  class="w-full px-3 py-1.5 rounded-lg bg-purple-950/30 border border-purple-900/50 text-xs font-bold text-white focus:outline-none transition-all cursor-pointer"
+                  class="w-full px-3 py-2.5 rounded-xl bg-purple-950/40 border-2 border-purple-800/60 text-sm font-bold text-white focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all cursor-pointer shadow-inner"
                 >
-                  <option [value]="30">30 Giây</option>
-                  <option [value]="60">60 Giây</option>
-                  <option [value]="90">90 Giây</option>
+                  <option [value]="30" class="bg-purple-950 text-white">30 Giây</option>
+                  <option [value]="60" class="bg-purple-950 text-white">60 Giây</option>
+                  <option [value]="90" class="bg-purple-950 text-white">90 Giây</option>
                 </select>
               </div>
+
+              <div class="space-y-1.5 flex flex-col justify-end">
+                <label class="block text-xs font-extrabold tracking-wide text-purple-200 uppercase"
+                  >Chủ đề / thể loại</label
+                >
+                <select
+                  [(ngModel)]="wordCategory"
+                  class="w-full px-3 py-2.5 rounded-xl bg-purple-950/40 border-2 border-purple-800/60 text-sm font-bold text-white focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all cursor-pointer shadow-inner"
+                >
+                  @for (option of wordCategoryOptions; track option.value) {
+                    <option [value]="option.value" class="bg-purple-950 text-white">
+                      {{ option.label }}
+                    </option>
+                  }
+                </select>
+              </div>
+
+              @if (wordCategory === 'custom') {
+                <div class="col-span-2 space-y-1.5">
+                  <label class="block text-xs font-extrabold tracking-wide text-purple-200 uppercase"
+                    >Từ khóa tùy chỉnh</label
+                  >
+                  <textarea
+                    [(ngModel)]="customWordBankText"
+                    rows="3"
+                    class="w-full px-4 py-3 rounded-xl bg-purple-950/30 border-2 border-purple-800/60 text-white placeholder-purple-800/40 font-bold text-base focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all shadow-inner resize-none"
+                    placeholder="Ví dụ: mèo, robot, xe đạp, áo thun"
+                  ></textarea>
+                  <p class="text-[11px] text-purple-200/70 font-semibold">
+                    Nhập các từ ngăn cách bằng dấu phẩy. Hệ thống sẽ bốc ngẫu nhiên từ danh sách này.
+                  </p>
+                </div>
+              }
+            </div>
+
+            <!-- Tab Content: Join Room -->
+            <div *ngIf="activeTab === 'join'" class="space-y-1.5 animate-fade-in">
+              <label class="block text-xs font-extrabold tracking-wide text-purple-200 uppercase"
+                >Mã phòng chơi</label
+              >
+              <input
+                type="text"
+                [(ngModel)]="roomIdToJoin"
+                [disabled]="isDirectJoin"
+                class="w-full px-4 py-3 rounded-xl bg-purple-950/30 border-2 border-purple-800/60 text-white placeholder-purple-800/40 font-bold text-base focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all shadow-inner uppercase disabled:opacity-50 disabled:cursor-not-allowed"
+                placeholder="NHẬP MÃ PHÒNG (VD: ABCXYZ)..."
+              />
             </div>
           </div>
         </div>
@@ -161,10 +210,21 @@
         <!-- Big Play Button -->
         <div class="flex justify-center pt-2">
           <button
+            *ngIf="activeTab === 'create'"
             (click)="onCreateRoom()"
-            class="play-btn px-10 py-3 bg-white hover:bg-slate-100 font-black text-purple-950 text-lg rounded-full shadow-2xl active:scale-95 transition-all cursor-pointer flex items-center gap-2.5 border-b-6 border-purple-300"
+            class="play-btn px-10 py-3 bg-white hover:bg-slate-100 font-black text-purple-950 text-lg rounded-full shadow-2xl active:scale-95 transition-all cursor-pointer flex items-center gap-2.5 border-b-6 border-purple-300 shadow-purple-900/30"
           >
-            <svg lucidePlay class="w-6 h-6 text-green-500 fill-green-500"></svg> BẮT ĐẦU
+            <svg lucidePlay class="w-6 h-6 text-green-500 fill-green-500"></svg> 
+            TẠO PHÒNG MỚI
+          </button>
+          
+          <button
+            *ngIf="activeTab === 'join'"
+            (click)="onJoinRoom()"
+            class="play-btn px-10 py-3 bg-white hover:bg-slate-100 font-black text-purple-950 text-lg rounded-full shadow-2xl active:scale-95 transition-all cursor-pointer flex items-center gap-2.5 border-b-6 border-purple-300 shadow-purple-900/30"
+          >
+            <svg lucidePlay class="w-6 h-6 text-green-500 fill-green-500"></svg> 
+            THAM GIA PHÒNG
           </button>
         </div>
       </div>
@@ -209,18 +269,19 @@
         </button>
 
         <!-- Dot indicators -->
-        <div class="flex items-center gap-1.5">
-          <span
-            *ngFor="let step of carouselSteps; let idx = index"
-            [ngClass]="{
-              'w-2.5 h-2.5 bg-white border border-green-500 ring-2 ring-white':
-                idx === activeCarouselIndex,
-              'w-1.5 h-1.5 bg-slate-650 hover:bg-slate-500': idx !== activeCarouselIndex,
-            }"
-            (click)="activeCarouselIndex = idx"
-            class="rounded-full transition-all cursor-pointer"
-          >
-          </span>
+        <div class="flex items-center gap-2.5 justify-center py-1">
+          @for (step of carouselSteps; track idx; let idx = $index) {
+            <span
+              [ngClass]="{
+                'w-3 h-3 bg-white border-2 border-green-500 ring-4 ring-green-500/25 scale-110':
+                  idx === activeCarouselIndex,
+                'w-2 h-2 bg-purple-300/40 hover:bg-purple-200/60': idx !== activeCarouselIndex,
+              }"
+              (click)="activeCarouselIndex = idx"
+              class="rounded-full transition-all cursor-pointer"
+            >
+            </span>
+          }
         </div>
 
         <!-- Right Arrow -->
@@ -289,4 +350,14 @@
       </div>
     </div>
   </div>
+
+  <!-- Loading overlay in glassmorphism style -->
+  @if (loading$ | async) {
+    <div class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-slate-950/80 backdrop-blur-md select-none">
+      <div class="w-16 h-16 border-4 border-dashed border-green-500 border-t-transparent rounded-full animate-spin"></div>
+      <h3 class="mt-4 text-xl font-bold text-slate-100 uppercase tracking-widest animate-pulse">
+        Đang xử lý kết nối...
+      </h3>
+    </div>
+  }
 </div>

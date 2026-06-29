@@ -7,6 +7,7 @@ export interface Player {
   hasGuessedCorrectly: boolean;
   lastGuessTime?: number;
   drawingData?: DrawStroke[]; // Used in Mode B to store completed drawings for reveal
+  avatar?: string;
 }
 
 export type GameMode = 'A' | 'B';
@@ -19,6 +20,8 @@ export interface GameSettings {
   revealTimeLimit: number; // in seconds
   botCount: number;
   wordCategory: string;
+  customWordBank?: string[];
+  maxPlayers?: number;
 }
 
 export interface DrawPoint {
@@ -31,6 +34,8 @@ export interface DrawStroke {
   color: string;
   width: number;
   isEraser?: boolean;
+  shapeType?: 'brush' | 'eraser' | 'rectangle' | 'circle' | 'line';
+  opacity?: number;
 }
 
 export interface ChatMessage {
@@ -54,4 +59,10 @@ export interface RoomState {
   timeLeft: number;
   roundNumber: number;
   maxRounds: number;
+  settings?: GameSettings;
+  hostId?: string;
+  finalGuess?: string;
+  finalGuessIsCorrect?: boolean;
+  revealedIndexes?: number[];
+  hintsRevealed?: number;
 }

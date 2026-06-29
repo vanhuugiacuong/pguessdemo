@@ -1,0 +1,126 @@
+<div
+  class="game-container w-full min-h-screen bg-transparent text-white flex flex-col font-sans transition-all duration-300"
+>
+  @if (isTransitioning) {
+    <!-- Fullscreen Phase Transition Loading Overlay -->
+    <div class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-slate-950/85 backdrop-blur-md text-white select-none animate-fade-in">
+      <div class="text-center space-y-4">
+        <!-- Spinner -->
+        <div class="flex justify-center">
+          <div class="w-12 h-12 border-4 border-dashed border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+        <!-- Label -->
+        <p class="text-xs font-black uppercase tracking-widest text-purple-300 animate-pulse">
+          Đang tải màn chơi...
+        </p>
+      </div>
+    </div>
+  }
+
+  @if (showRoundIntro) {
+    <!-- Round Intro Screen -->
+    <div class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-gradient-to-br from-[#1e3a8a] via-[#581c87] to-[#701a75] text-white select-none animate-fade-in">
+      <div class="text-center space-y-6">
+        <!-- Round number badge -->
+        <div class="inline-block px-6 py-2 bg-yellow-500 text-slate-950 font-black text-sm uppercase tracking-widest rounded-full shadow-lg border-2 border-white animate-bounce">
+          VÒNG {{ roomState?.roundNumber || 1 }}
+        </div>
+        
+        <!-- Title -->
+        <h1 class="text-4xl md:text-6xl font-black uppercase tracking-widest drop-shadow-[0_4px_8px_rgba(0,0,0,0.5)] animate-pulse">
+          TRÒ CHƠI BẮT ĐẦU!
+        </h1>
+        
+        <!-- Subtitle -->
+        <p class="text-base md:text-lg font-extrabold text-purple-200">
+          @if (isWordSelector) {
+            Chuẩn bị chọn từ khóa của bạn...
+          } @else {
+            Chuẩn bị nhận từ khóa từ đồng đội...
+          }
+        </p>
+
+        <!-- Spinner -->
+        <div class="mt-8 flex justify-center">
+          <div class="w-14 h-14 border-4 border-dashed border-yellow-400 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <div
+    [ngClass]="{
+      'flex-1 flex flex-col justify-between w-full min-h-0': true,
+      'overflow-y-auto': !(isPlaying && isUserDrawer),
+      'p-6': !isLobby && !(isPlaying && isUserDrawer),
+      'p-0': isPlaying && isUserDrawer,
+      'p-4 md:p-6 max-w-5xl mx-auto h-[95dvh]': isLobby,
+    }"
+  >
+    <!-- 1. LOBBY PHASE -->
+    @if (isLobby) {
+      <app-room-lobby
+        [roomState]="roomState"
+        [myPlayerId]="myPlayerId"
+        [loading]="(loading$ | async) ?? false"
+        [isHost]="isHost"
+        [selectedGameMode]="selectedGameMode"
+        [selectedWordCategory]="selectedWordCategory"
+        [customWordBankText]="customWordBankText"
+        [currentBotCount]="currentBotCount"
+        [playerSlots]="playerSlots"
+        (changeMode)="changeMode($event)"
+        (changeTimeLimit)="changeTimeLimit($event)"
+        (changeMaxPlayers)="changeMaxPlayers($event)"
+        (changeBotCount)="changeBotCount($event)"
+        (changeWordCategory)="changeWordCategory($event)"
+        (changeCustomWordBank)="changeCustomWordBank($event)"
+        (startGame)="onStartGame()"
+        (quit)="onQuit()"
+        (copyInviteLink)="copyInviteLink()"
+        (copyRoomId)="copyRoomId()"
+        class="flex-1 flex flex-col justify-between h-full space-y-4"
+      ></app-room-lobby>
+    }
+
+    <!-- 1.5. WORD SELECTION PHASE -->
+    @if (isWordSelection) {
+      <app-word-selection
+        [roomState]="roomState"
+        [wordChoices]="wordChoices"
+        [isWordSelector]="isWordSelector"
+        [wordSelectorName]="wordSelectorName"
+        (selectWordChoice)="onSelectWordChoice($event)"
+        (confirmCustomWord)="onConfirmCustomWord($event)"
+      ></app-word-selection>
+    }
+
+    <!-- 2. PLAYING PHASE -->
+    @if (isPlaying) {
+      <app-game-playing
+        [roomState]="roomState"
+        [myPlayerId]="myPlayerId"
+        [isUserDrawer]="isUserDrawer"
+        [isUserGuesser]="isUserGuesser"
+        [currentDrawerPlayer]="currentDrawerPlayer"
+        [previousPlayerDrawing]="previousPlayerDrawing"
+        [isDrawingTurn]="isDrawingTurn"
+        [currentTurnPlayerName]="currentTurnPlayerName"
+        [totalDrawingTurns]="totalDrawingTurns"
+        (quit)="onQuit()"
+      ></app-game-playing>
+    }
+
+    <!-- 3. REVEAL / SCOREBOARD BREAK PHASE -->
+    @if (isReveal) {
+      <app-game-reveal
+        [roomState]="roomState"
+        [myPlayerId]="myPlayerId"
+        [currentDrawerPlayer]="currentDrawerPlayer"
+        [albumSteps]="albumSteps"
+        [sortedPlayers]="sortedPlayers"
+        (quit)="onQuit()"
+      ></app-game-reveal>
+    }
+  </div>
+</div>

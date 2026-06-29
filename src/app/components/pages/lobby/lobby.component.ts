@@ -1,8 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { GameStateService } from '../../services/game-state.service';
-import { GameSettings, GameMode } from '../../models/game.model';
+import { ActivatedRoute } from '@angular/router';
+import { GameStateService } from '../../../services/game-state.service';
+import { GameSettings, GameMode } from '../../../models/game.model';
+import { Observable } from 'rxjs';
 import {
   LucidePlay,
   LucideRefreshCw,
@@ -39,11 +41,26 @@ interface CarouselStep {
   styleUrl: './lobby.component.css',
 })
 export class LobbyComponent implements OnInit {
+  public loading$: Observable<boolean>;
+
   public nickname = '';
   public selectedMode: GameMode = 'A';
   public botCount = 3;
   public drawTimeLimit = 60;
-  public wordCategory = 'General';
+  public wordCategory = 'general';
+  public customWordBankText = '';
+  public roomIdToJoin = '';
+  public isDirectJoin = false;
+  public activeTab: 'create' | 'join' = 'create';
+
+  public wordCategoryOptions = [
+    { value: 'general', label: 'Chung' },
+    { value: 'animals', label: 'Động vật' },
+    { value: 'car_brands', label: 'Thương hiệu xe' },
+    { value: 'clothes', label: 'Quần áo' },
+    { value: 'food', label: 'Đồ ăn' },
+    { value: 'custom', label: 'Tùy chỉnh' },
+  ];
 
   // Avatars list from assets
   public avatars: string[] = ['2.svg', '30.svg', '33.svg', '34.svg', '39.svg', '52.svg', '58.svg'];
@@ -94,21 +111,47 @@ export class LobbyComponent implements OnInit {
   ];
   public activeCarouselIndex = 1; // Default to step 2
 
-  public activeTab: 'anon' | 'auth' = 'anon';
-
-  constructor(private gameState: GameStateService) {}
+  constructor(
+    private gameState: GameStateService,
+    private route: ActivatedRoute
+  ) {
+    this.loading$ = this.gameState.loading$;
+  }
 
   ngOnInit(): void {
     const funnyNames = [
       'GamerPro',
       'DoodleKing',
-      'SketchyCat',
-      'PixelWizard',
       'NeoPainter',
       'CuongDzai',
     ];
     this.nickname = funnyNames[Math.floor(Math.random() * funnyNames.length)];
     this.randomizeAvatar();
+
+    this.route.queryParams.subscribe((params) => {
+      if (params['room']) {
+        this.roomIdToJoin = params['room'];
+        this.activeTab = 'join';
+      }
+    });
+
+    this.route.params.subscribe((params) => {
+      if (params['roomId']) {
+        this.roomIdToJoin = params['roomId'];
+        this.isDirectJoin = true;
+        this.activeTab = 'join';
+      }
+    });
+
+    if (this.route.parent) {
+      this.route.parent.params.subscribe((params) => {
+        if (params['roomId']) {
+          this.roomIdToJoin = params['roomId'];
+          this.isDirectJoin = true;
+          this.activeTab = 'join';
+        }
+      });
+    }
   }
 
   public randomizeAvatar(): void {
@@ -129,19 +172,31 @@ export class LobbyComponent implements OnInit {
     this.activeCarouselIndex = (this.activeCarouselIndex + 1) % this.carouselSteps.length;
   }
 
-  public setTab(tab: 'anon' | 'auth'): void {
-    this.activeTab = tab;
-  }
-
   public onCreateRoom(): void {
+    const customWordBank = this.wordCategory === 'custom'
+      ? this.customWordBankText
+          .split(',')
+          .map((word) => word.trim())
+          .filter((word) => word.length > 0)
+      : undefined;
+
     const settings: GameSettings = {
       mode: this.selectedMode,
       drawTimeLimit: this.drawTimeLimit,
       revealTimeLimit: 10,
       botCount: this.botCount,
       wordCategory: this.wordCategory,
+      customWordBank,
     };
 
-    this.gameState.createRoom(this.nickname, settings);
+    this.gameState.createRoom(this.nickname, this.currentAvatar, settings);
+  }
+
+  public onJoinRoom(): void {
+    if (!this.roomIdToJoin.trim()) {
+      alert('Vui lòng nhập Mã phòng!');
+      return;
+    }
+    this.gameState.joinRoom(this.roomIdToJoin.trim(), this.nickname, this.currentAvatar);
   }
 }
