@@ -47,10 +47,20 @@ export class LobbyComponent implements OnInit {
   public selectedMode: GameMode = 'A';
   public botCount = 3;
   public drawTimeLimit = 60;
-  public wordCategory = 'General';
+  public wordCategory = 'general';
+  public customWordBankText = '';
   public roomIdToJoin = '';
   public isDirectJoin = false;
   public activeTab: 'create' | 'join' = 'create';
+
+  public wordCategoryOptions = [
+    { value: 'general', label: 'Chung' },
+    { value: 'animals', label: 'Động vật' },
+    { value: 'car_brands', label: 'Thương hiệu xe' },
+    { value: 'clothes', label: 'Quần áo' },
+    { value: 'food', label: 'Đồ ăn' },
+    { value: 'custom', label: 'Tùy chỉnh' },
+  ];
 
   // Avatars list from assets
   public avatars: string[] = ['2.svg', '30.svg', '33.svg', '34.svg', '39.svg', '52.svg', '58.svg'];
@@ -163,12 +173,20 @@ export class LobbyComponent implements OnInit {
   }
 
   public onCreateRoom(): void {
+    const customWordBank = this.wordCategory === 'custom'
+      ? this.customWordBankText
+          .split(',')
+          .map((word) => word.trim())
+          .filter((word) => word.length > 0)
+      : undefined;
+
     const settings: GameSettings = {
       mode: this.selectedMode,
       drawTimeLimit: this.drawTimeLimit,
       revealTimeLimit: 10,
       botCount: this.botCount,
       wordCategory: this.wordCategory,
+      customWordBank,
     };
 
     this.gameState.createRoom(this.nickname, this.currentAvatar, settings);
