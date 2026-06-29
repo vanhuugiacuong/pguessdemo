@@ -2,6 +2,7 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RoomState } from '../../../models/game.model';
+import { SoundService } from '../../../services/sound.service';
 import {
   LucidePlay,
   LucideVolume2,
@@ -59,7 +60,8 @@ export class RoomLobbyComponent {
   ];
 
   public activeSettingsTab: 'preset' | 'custom' = 'preset';
-  public isMuted = false;
+
+  constructor(public soundService: SoundService) {}
 
   public changeModeAction(mode: 'A' | 'B'): void {
     this.changeMode.emit(mode);
@@ -94,7 +96,7 @@ export class RoomLobbyComponent {
   }
 
   public toggleMute(): void {
-    this.isMuted = !this.isMuted;
+    this.soundService.toggleMute();
   }
 
   public copyInviteLinkAction(): void {

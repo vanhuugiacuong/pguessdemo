@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { GameStateService } from '../../../services/game-state.service';
+import { SoundService } from '../../../services/sound.service';
 import { RoomState, Player, DrawStroke } from '../../../models/game.model';
 import { Subscription, Observable } from 'rxjs';
 import { RoomLobbyComponent } from '../room-lobby/room-lobby.component';
@@ -28,14 +29,14 @@ export class GameBoardComponent implements OnInit, OnDestroy {
   private subscription!: Subscription;
 
   public activeSettingsTab: 'preset' | 'custom' = 'preset';
-  public isMuted = false;
+  public get isMuted(): boolean { return this.soundService.isMuted; }
   public isCardMinimized = false;
   public cardPosition: 'left' | 'right' = 'left';
   public cardZoomState: 'normal' | 'zoomed' = 'normal';
 
   public wordChoices: string[] = [];
 
-  constructor(private gameState: GameStateService) {
+  constructor(private gameState: GameStateService, public soundService: SoundService) {
     this.loading$ = this.gameState.loading$;
   }
 
@@ -307,7 +308,7 @@ export class GameBoardComponent implements OnInit, OnDestroy {
   }
 
   public toggleMute(): void {
-    this.isMuted = !this.isMuted;
+    this.soundService.toggleMute();
   }
 
   public copyInviteLink(): void {

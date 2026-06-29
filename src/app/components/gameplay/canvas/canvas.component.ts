@@ -10,6 +10,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { DrawStroke, DrawPoint, RoomState } from '../../../models/game.model';
 import { GameStateService } from '../../../services/game-state.service';
+import { SoundService } from '../../../services/sound.service';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -77,7 +78,7 @@ export class CanvasComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly internalWidth = 800;
   private readonly internalHeight = 500;
 
-  constructor(private gameState: GameStateService) {}
+  constructor(private gameState: GameStateService, private soundService: SoundService) {}
 
   public get myPlayerId(): string | null {
     return this.gameState.getMyPlayerId();
@@ -217,6 +218,11 @@ export class CanvasComponent implements OnInit, AfterViewInit, OnDestroy {
     // For freehand drawing, points list contains path. For shapes, points[0] is start, points[1] is end
     this.currentStroke = [point, point];
     this.redoStack = []; // Clear redo stack on new action
+
+    // Play a soft scratch sound when starting a new stroke
+    if (!this.readOnly) {
+      this.soundService.playDrawStroke();
+    }
   }
 
   private drawMove(point: DrawPoint): void {
