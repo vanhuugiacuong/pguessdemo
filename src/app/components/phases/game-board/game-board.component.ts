@@ -261,6 +261,14 @@ export class GameBoardComponent implements OnInit, OnDestroy {
     return this.roomState.players.filter(p => p.isBot).length;
   }
 
+  public get selectedWordCategory(): string {
+    return this.roomState?.settings?.wordCategory || 'general';
+  }
+
+  public get customWordBankText(): string {
+    return this.roomState?.settings?.customWordBank?.join(', ') || '';
+  }
+
   public changeMode(mode: 'A' | 'B'): void {
     if (!this.isHost) return;
     this.gameState.updateRoomSettings({ mode });
@@ -279,6 +287,23 @@ export class GameBoardComponent implements OnInit, OnDestroy {
   public changeBotCount(bots: number): void {
     if (!this.isHost) return;
     this.gameState.updateRoomSettings({ botCount: bots });
+  }
+
+  public changeWordCategory(category: string): void {
+    if (!this.isHost) return;
+    this.gameState.updateRoomSettings({ wordCategory: category });
+  }
+
+  public changeCustomWordBank(value: string): void {
+    if (!this.isHost) return;
+    const customWordBank = value
+      .split(',')
+      .map((word) => word.trim())
+      .filter((word) => word.length > 0);
+
+    this.gameState.updateRoomSettings({
+      customWordBank,
+    });
   }
 
   public toggleMute(): void {

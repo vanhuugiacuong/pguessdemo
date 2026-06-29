@@ -30,6 +30,8 @@ export class RoomLobbyComponent {
   @Input() loading = false;
   @Input() isHost = false;
   @Input() selectedGameMode: 'A' | 'B' = 'A';
+  @Input() selectedWordCategory = 'general';
+  @Input() customWordBankText = '';
   @Input() currentBotCount = 0;
   @Input() playerSlots: number[] = [];
 
@@ -37,10 +39,24 @@ export class RoomLobbyComponent {
   @Output() changeTimeLimit = new EventEmitter<number>();
   @Output() changeMaxPlayers = new EventEmitter<number>();
   @Output() changeBotCount = new EventEmitter<number>();
+  @Output() changeWordCategory = new EventEmitter<string>();
+  @Output() changeCustomWordBank = new EventEmitter<string>();
   @Output() startGame = new EventEmitter<void>();
   @Output() quit = new EventEmitter<void>();
   @Output() copyInviteLink = new EventEmitter<void>();
   @Output() copyRoomId = new EventEmitter<void>();
+
+  public wordCategoryOptions = [
+    { value: 'general', label: 'Chung' },
+    { value: 'animals', label: 'Động vật' },
+    { value: 'car_brands', label: 'Thương hiệu xe' },
+    { value: 'clothes', label: 'Quần áo' },
+    { value: 'food', label: 'Đồ ăn' },
+    { value: 'characters', label: 'Nhân vật' },
+    { value: 'objects', label: 'Vật dụng' },
+    { value: 'sports', label: 'Thể thao' },
+    { value: 'custom', label: 'Tùy chỉnh' },
+  ];
 
   public activeSettingsTab: 'preset' | 'custom' = 'preset';
   public isMuted = false;
@@ -59,6 +75,14 @@ export class RoomLobbyComponent {
 
   public changeBotCountAction(bots: number): void {
     this.changeBotCount.emit(bots);
+  }
+
+  public changeWordCategoryAction(category: string): void {
+    this.changeWordCategory.emit(category);
+  }
+
+  public changeCustomWordBankAction(value: string): void {
+    this.changeCustomWordBank.emit(value);
   }
 
   public onStartGame(): void {
