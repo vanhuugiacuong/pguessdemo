@@ -5,7 +5,7 @@ import { RoomState, GameSettings, ChatMessage, DrawStroke } from '../models/game
 
 // Cấu hình URL Backend để test qua internet (ví dụ: Ngrok, LocalTunnel, hoặc khi deploy thực tế).
 // Để trống ('') nếu chạy local thông thường để tự động nhận dạng IP.
-const BACKEND_OVERRIDE_URL = '';
+const BACKEND_OVERRIDE_URL = 'https://pguess-api.onrender.com';
 
 @Injectable({
   providedIn: 'root'
