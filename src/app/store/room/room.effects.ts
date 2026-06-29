@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { map, tap } from 'rxjs/operators';
+import { of } from 'rxjs';
+import { map, tap, mergeMap, catchError } from 'rxjs/operators';
 import * as RoomActions from './room.actions';
 import { SocketService } from '../../services/socket.service';
 
@@ -52,5 +53,29 @@ export class RoomEffects {
         })
       ),
     { dispatch: false }
+  );
+
+  submitDrawing$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(RoomActions.submitDrawing),
+      mergeMap(({ roomId, strokes }) =>
+        this.socketService.submitDrawing(roomId, strokes).pipe(
+          map(() => RoomActions.submitDrawingSuccess()),
+          catchError((error) => of(RoomActions.submitDrawingFailure({ error: error.message || error })))
+        )
+      )
+    )
+  );
+
+  returnToLobby$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(RoomActions.returnToLobby),
+      mergeMap(({ roomId }) =>
+        this.socketService.returnToLobby(roomId).pipe(
+          map(() => RoomActions.returnToLobbySuccess()),
+          catchError((error) => of(RoomActions.returnToLobbyFailure({ error: error.message || error })))
+        )
+      )
+    )
   );
 }

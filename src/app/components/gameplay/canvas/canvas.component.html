@@ -106,10 +106,12 @@
                 class="w-16 h-16 rounded-full bg-green-500/20 border-[3px] border-green-500 flex items-center justify-center mb-3 animate-pulse text-3xl shadow-lg">
                 ✔️
               </div>
-              <span class="text-lg font-black uppercase tracking-wider block drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Đã
-                gửi bản vẽ!</span>
-              <span class="text-xs text-slate-200 font-bold block mt-1 drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]">Vui lòng
-                chờ các người chơi khác hoàn thành...</span>
+              @if (loading$ | async) {
+                <span class="text-lg font-black uppercase tracking-wider block drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Đang gửi bản vẽ...</span>
+              } @else {
+                <span class="text-lg font-black uppercase tracking-wider block drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Đã gửi bản vẽ!</span>
+                <span class="text-xs text-slate-200 font-bold block mt-1 drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]">Vui lòng chờ các người chơi khác hoàn thành...</span>
+              }
             </div>
           }
         </div>
@@ -299,9 +301,9 @@
         </div>
 
         <!-- Done button (XONG!) -->
-        <button (click)="submitDone()" [disabled]="isDoneDrawing" [ngClass]="{
-            'bg-[#a29beb] border-[#6b62bd] hover:bg-[#b0a9f0] cursor-pointer': !isDoneDrawing,
-            'bg-slate-700/60 border-slate-800 opacity-60 cursor-not-allowed': isDoneDrawing
+        <button (click)="submitDone()" [disabled]="isDoneDrawing || (loading$ | async)" [ngClass]="{
+            'bg-[#a29beb] border-[#6b62bd] hover:bg-[#b0a9f0] cursor-pointer': !isDoneDrawing && !(loading$ | async),
+            'bg-slate-700/60 border-slate-800 opacity-60 cursor-not-allowed': isDoneDrawing || (loading$ | async)
           }"
           class="px-8 py-3 text-[#1e1145] text-base font-black uppercase tracking-widest rounded-2xl transition-all border-b-[5px] flex items-center gap-2.5 shadow-lg active:scale-95 z-10">
           <!-- Rounded green checkmark circle -->
@@ -309,11 +311,12 @@
             class="w-5 h-5 rounded-full bg-[#4ce0aa] border-[2.5px] border-[#1e1145] flex items-center justify-center text-[10px] text-white">
             ✓
           </span>
-          @if (!isDoneDrawing) {
-            <span>XONG!</span>
-          }
-          @if (isDoneDrawing) {
+          @if (loading$ | async) {
+            <span>ĐANG GỬI...</span>
+          } @else if (isDoneDrawing) {
             <span>ĐÃ GỬI</span>
+          } @else {
+            <span>XONG!</span>
           }
         </button>
       </div>

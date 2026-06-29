@@ -10,7 +10,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { DrawStroke, DrawPoint, RoomState } from '../../../models/game.model';
 import { GameStateService } from '../../../services/game-state.service';
-import { Subscription } from 'rxjs';
+import { Subscription, Observable } from 'rxjs';
 
 @Component({
   selector: 'app-canvas',
@@ -70,6 +70,7 @@ export class CanvasComponent implements OnInit, AfterViewInit, OnDestroy {
 
   public roomState: RoomState | null = null;
   public isDoneDrawing = false;
+  public loading$: Observable<boolean>;
   private lastRoundNumber = 0;
   private subscriptions: Subscription = new Subscription();
 
@@ -77,7 +78,9 @@ export class CanvasComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly internalWidth = 800;
   private readonly internalHeight = 500;
 
-  constructor(private gameState: GameStateService) {}
+  constructor(private gameState: GameStateService) {
+    this.loading$ = this.gameState.loading$;
+  }
 
   public get myPlayerId(): string | null {
     return this.gameState.getMyPlayerId();

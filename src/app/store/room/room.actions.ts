@@ -1,5 +1,5 @@
 import { createAction, props } from '@ngrx/store';
-import { GameSettings, RoomState } from '../../models/game.model';
+import { GameSettings, RoomState, DrawStroke } from '../../models/game.model';
 
 export const createRoom = createAction(
   '[Room] Create Room',
@@ -27,3 +27,31 @@ export const setError = createAction(
 );
 
 export const resetRoom = createAction('[Room] Reset/Leave Room');
+
+export const submitDrawing = createAction(
+  '[Room] Submit Drawing',
+  props<{ roomId: string; strokes: DrawStroke[] }>()
+);
+
+export const submitDrawingSuccess = createAction(
+  '[Room] Submit Drawing Success'
+);
+
+export const submitDrawingFailure = createAction(
+  '[Room] Submit Drawing Failure',
+  props<{ error: string }>()
+);
+
+export const returnToLobby = createAction(
+  '[Room] Return To Lobby',
+  props<{ roomId: string }>()
+);
+
+export const returnToLobbySuccess = createAction(
+  '[Room] Return To Lobby Success'
+);
+
+export const returnToLobbyFailure = createAction(
+  '[Room] Return To Lobby Failure',
+  props<{ error: string }>()
+);

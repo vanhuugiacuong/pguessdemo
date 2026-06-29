@@ -116,7 +116,13 @@ export class GameStateService {
 
   public submitDrawing(strokes: DrawStroke[]): void {
     if (this.currentRoomId) {
-      this.socketService.submitDrawing(this.currentRoomId, strokes);
+      this.store.dispatch(RoomActions.submitDrawing({ roomId: this.currentRoomId, strokes }));
+    }
+  }
+
+  public returnToLobby(): void {
+    if (this.currentRoomId) {
+      this.store.dispatch(RoomActions.returnToLobby({ roomId: this.currentRoomId }));
     }
   }
 

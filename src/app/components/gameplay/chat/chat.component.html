@@ -61,8 +61,19 @@
             <!-- Player Name -->
             <span class="block text-[10px] font-black uppercase text-amber-300 mb-1 mr-1 tracking-wider">Bạn</span>
             <!-- Bubble Content -->
-            <div class="bg-amber-100 text-slate-950 px-4 py-2 border-3 border-black rounded-2xl rounded-tr-none shadow-[3px_3px_0px_rgba(0,0,0,1)] relative text-left">
-              <p class="text-sm font-extrabold leading-normal">{{ msg.text }}</p>
+            <div
+              [ngClass]="{
+                'bg-rose-100 border-red-500 text-red-950 shadow-[3px_3px_0px_rgba(239,68,68,0.4)]': currentRoom?.phase === 'PLAYING',
+                'bg-amber-100 border-black text-slate-950 shadow-[3px_3px_0px_rgba(0,0,0,1)]': currentRoom?.phase !== 'PLAYING'
+              }"
+              class="px-4 py-2 border-3 rounded-2xl rounded-tr-none relative text-left"
+            >
+              <p class="text-sm font-extrabold leading-normal flex items-center gap-1.5 justify-end">
+                <span>{{ msg.text }}</span>
+                @if (currentRoom?.phase === 'PLAYING') {
+                  <span class="text-red-500 text-[11px] shrink-0 font-normal">❌</span>
+                }
+              </p>
             </div>
           </div>
           <!-- Avatar -->
@@ -86,8 +97,19 @@
             <!-- Player Name -->
             <span class="block text-[10px] font-black uppercase text-purple-300 mb-1 ml-1 tracking-wider">{{ msg.playerName }}</span>
             <!-- Bubble Content -->
-            <div class="bg-white text-slate-950 px-4 py-2 border-3 border-black rounded-2xl rounded-tl-none shadow-[3px_3px_0px_rgba(0,0,0,1)] relative text-left">
-              <p class="text-sm font-extrabold leading-normal">{{ msg.text }}</p>
+            <div
+              [ngClass]="{
+                'bg-rose-50 border-red-500 text-red-950 shadow-[3px_3px_0px_rgba(239,68,68,0.4)]': currentRoom?.phase === 'PLAYING',
+                'bg-white border-black text-slate-950 shadow-[3px_3px_0px_rgba(0,0,0,1)]': currentRoom?.phase !== 'PLAYING'
+              }"
+              class="px-4 py-2 border-3 rounded-2xl rounded-tl-none relative text-left"
+            >
+              <p class="text-sm font-extrabold leading-normal flex items-center gap-1.5">
+                @if (currentRoom?.phase === 'PLAYING') {
+                  <span class="text-red-500 text-[11px] shrink-0 font-normal">❌</span>
+                }
+                <span>{{ msg.text }}</span>
+              </p>
             </div>
           </div>
         </div>
@@ -100,19 +122,33 @@
     (submit)="onSend(); $event.preventDefault()"
     class="p-4 bg-slate-950/60 border-t-4 border-black flex gap-3 items-center"
   >
-    <input
-      type="text"
-      [(ngModel)]="currentGuess"
-      name="guessInput"
-      placeholder="Nhập dự đoán của bạn..."
-      autocomplete="off"
-      class="flex-1 px-4 py-3 rounded-xl bg-purple-950/40 border-3 border-black text-white placeholder-purple-300/30 focus:outline-none focus:border-green-500 font-bold transition-all text-sm shadow-inner"
-    />
-    <button
-      type="submit"
-      class="px-6 py-3 bg-green-500 hover:bg-green-400 active:scale-95 transition-all text-white text-xs font-black uppercase tracking-wider rounded-xl border-3 border-black shadow-[2px_2px_0px_rgba(0,0,0,1)] cursor-pointer"
-    >
-      Đoán
-    </button>
+    @if (isDrawer) {
+      <div class="flex-1 text-center py-2.5 px-4 rounded-xl bg-purple-950/20 border-3 border-dashed border-purple-500/40 text-purple-300 font-bold text-xs uppercase tracking-wider">
+        ✏️ Bạn đang vẽ, hãy tập trung nhé!
+      </div>
+    } @else if (hasGuessedCorrectly) {
+      <div class="flex-1 text-center py-2.5 px-4 rounded-xl bg-green-950/40 border-3 border-green-500 text-green-400 font-extrabold text-sm uppercase tracking-wide flex items-center justify-center gap-2 animate-pulse">
+        <span>✔️</span> BẠN ĐÃ ĐOÁN CHÍNH XÁC!
+      </div>
+    } @else if (isTimeUp) {
+      <div class="flex-1 text-center py-2.5 px-4 rounded-xl bg-red-950/40 border-3 border-red-500 text-red-400 font-extrabold text-sm uppercase tracking-wide flex items-center justify-center gap-2">
+        <span>⏰</span> HẾT GIỜ!
+      </div>
+    } @else {
+      <input
+        type="text"
+        [(ngModel)]="currentGuess"
+        name="guessInput"
+        placeholder="Nhập dự đoán của bạn..."
+        autocomplete="off"
+        class="flex-1 px-4 py-3 rounded-xl bg-purple-950/40 border-3 border-black text-white placeholder-purple-300/30 focus:outline-none focus:border-green-500 font-bold transition-all text-sm shadow-inner"
+      />
+      <button
+        type="submit"
+        class="px-6 py-3 bg-green-500 hover:bg-green-400 active:scale-95 transition-all text-white text-xs font-black uppercase tracking-wider rounded-xl border-3 border-black shadow-[2px_2px_0px_rgba(0,0,0,1)] cursor-pointer"
+      >
+        Đoán
+      </button>
+    }
   </form>
 </div>

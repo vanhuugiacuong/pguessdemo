@@ -25,6 +25,7 @@ export class GameBoardComponent implements OnInit, OnDestroy {
   public roomState: RoomState | null = null;
   public loading$: Observable<boolean>;
   public showRoundIntro = false;
+  public isTransitioning = false;
   private subscription!: Subscription;
 
   public activeSettingsTab: 'preset' | 'custom' = 'preset';
@@ -43,11 +44,18 @@ export class GameBoardComponent implements OnInit, OnDestroy {
     let previousPhase: string | null = null;
     this.subscription = this.gameState.roomState$.subscribe((state) => {
       if (state) {
-        if (previousPhase === 'LOBBY' && state.phase === 'WORD_SELECTION') {
-          this.showRoundIntro = true;
-          setTimeout(() => {
-            this.showRoundIntro = false;
-          }, 3000);
+        if (previousPhase && previousPhase !== state.phase) {
+          if (state.phase === 'WORD_SELECTION') {
+            this.showRoundIntro = true;
+            setTimeout(() => {
+              this.showRoundIntro = false;
+            }, 2500);
+          } else {
+            this.isTransitioning = true;
+            setTimeout(() => {
+              this.isTransitioning = false;
+            }, 1000);
+          }
         }
         previousPhase = state.phase;
       } else {
@@ -253,7 +261,7 @@ export class GameBoardComponent implements OnInit, OnDestroy {
   // --- LOBBY ROOM SETTINGS ACTIONS ---
 
   public get selectedGameMode(): 'A' | 'B' {
-    return this.roomState?.maxRounds === 3 ? 'B' : 'A';
+    return this.roomState?.settings?.mode || 'A';
   }
 
   public get currentBotCount(): number {

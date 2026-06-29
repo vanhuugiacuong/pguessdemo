@@ -1,7 +1,11 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Subject } from 'rxjs';
+import { BehaviorSubject, Subject, Observable } from 'rxjs';
 import { io, Socket } from 'socket.io-client';
 import { RoomState, GameSettings, ChatMessage, DrawStroke } from '../models/game.model';
+
+// Cấu hình URL Backend để test qua internet (ví dụ: Ngrok, LocalTunnel, hoặc khi deploy thực tế).
+// Để trống ('') nếu chạy local thông thường để tự động nhận dạng IP.
+const BACKEND_OVERRIDE_URL = '';
 
 @Injectable({
   providedIn: 'root'
@@ -24,6 +28,9 @@ export class SocketService {
   public clearDrawingEvent$ = this.clearDrawingSubject.asObservable();
 
   private getBackendUrl(): string {
+    if (BACKEND_OVERRIDE_URL) {
+      return BACKEND_OVERRIDE_URL;
+    }
     if (typeof window === 'undefined') {
       return 'http://localhost:3000';
     }
@@ -182,8 +189,30 @@ export class SocketService {
     this.socket.emit('submit_guess', { roomId, guess });
   }
 
-  public submitDrawing(roomId: string, strokes: DrawStroke[]): void {
-    this.socket.emit('submit_drawing', { roomId, strokes });
+  public submitDrawing(roomId: string, strokes: DrawStroke[]): Observable<any> {
+    return new Observable((observer) => {
+      this.socket.emit('submit_drawing', { roomId, strokes }, (response: any) => {
+        if (response && response.error) {
+          observer.error(response.error);
+        } else {
+          observer.next(response);
+          observer.complete();
+        }
+      });
+    });
+  }
+
+  public returnToLobby(roomId: string): Observable<any> {
+    return new Observable((observer) => {
+      this.socket.emit('return_to_lobby', { roomId }, (response: any) => {
+        if (response && response.error) {
+          observer.error(response.error);
+        } else {
+          observer.next(response);
+          observer.complete();
+        }
+      });
+    });
   }
 
   /**

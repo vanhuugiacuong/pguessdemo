@@ -29,5 +29,33 @@ export const roomReducer = createReducer(
     error,
     loading: false,
   })),
+  on(RoomActions.submitDrawing, (state) => ({
+    ...state,
+    loading: true,
+    error: null,
+  })),
+  on(RoomActions.submitDrawingSuccess, (state) => ({
+    ...state,
+    loading: false,
+  })),
+  on(RoomActions.submitDrawingFailure, (state, { error }) => ({
+    ...state,
+    loading: false,
+    error,
+  })),
+  on(RoomActions.returnToLobby, (state) => ({
+    ...state,
+    loading: true,
+    error: null,
+  })),
+  on(RoomActions.returnToLobbySuccess, (state) => ({
+    ...state,
+    loading: false,
+  })),
+  on(RoomActions.returnToLobbyFailure, (state, { error }) => ({
+    ...state,
+    loading: false,
+    error,
+  })),
   on(RoomActions.resetRoom, () => initialState)
 );

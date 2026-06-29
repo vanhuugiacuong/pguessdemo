@@ -1,6 +1,22 @@
 <div
   class="game-container w-full min-h-screen bg-transparent text-white flex flex-col font-sans transition-all duration-300"
 >
+  @if (isTransitioning) {
+    <!-- Fullscreen Phase Transition Loading Overlay -->
+    <div class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-slate-950/85 backdrop-blur-md text-white select-none animate-fade-in">
+      <div class="text-center space-y-4">
+        <!-- Spinner -->
+        <div class="flex justify-center">
+          <div class="w-12 h-12 border-4 border-dashed border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+        <!-- Label -->
+        <p class="text-xs font-black uppercase tracking-widest text-purple-300 animate-pulse">
+          Đang tải màn chơi...
+        </p>
+      </div>
+    </div>
+  }
+
   @if (showRoundIntro) {
     <!-- Round Intro Screen -->
     <div class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-gradient-to-br from-[#1e3a8a] via-[#581c87] to-[#701a75] text-white select-none animate-fade-in">

@@ -80,6 +80,62 @@
           [readOnly]="false"
           class="w-full max-w-6xl h-full flex flex-col justify-center"
         ></app-canvas>
+
+        <!-- Floating Guess Stream for Mode A Drawer -->
+        @if (isModeA) {
+          <div class="absolute bottom-6 left-6 z-40 transition-all duration-300 flex flex-col pointer-events-auto">
+            @if (!isChatVisible) {
+              <button
+                (click)="isChatVisible = true"
+                class="px-4 py-2.5 rounded-xl bg-purple-950/95 border-3 border-black shadow-[4px_4px_0px_rgba(0,0,0,0.4)] text-xs font-black uppercase text-purple-200 hover:scale-105 active:scale-95 transition-all cursor-pointer flex items-center gap-1.5"
+                title="Hiện dự đoán của người chơi"
+              >
+                💬 HIỆN DỰ ĐOÁN
+              </button>
+            } @else {
+              <div class="w-64 bg-slate-950/80 border-4 border-black rounded-2xl p-3.5 shadow-[4px_4px_0px_rgba(0,0,0,0.4)] flex flex-col gap-2.5 backdrop-blur-md">
+                <div class="flex items-center justify-between border-b-2 border-black/40 pb-1.5">
+                  <span class="text-[10px] font-black uppercase text-purple-300 tracking-wider">💬 Dự đoán trực tiếp:</span>
+                  <button
+                    (click)="isChatVisible = false"
+                    class="text-[9px] font-black bg-purple-950 border-2 border-black hover:bg-purple-900 text-white rounded px-1.5 py-0.5 cursor-pointer transition-all active:scale-90"
+                    title="Ẩn"
+                  >
+                    ẨN
+                  </button>
+                </div>
+                
+                <!-- Messages List -->
+                <div class="flex flex-col gap-2 max-h-48 overflow-y-auto text-[11px] font-bold">
+                  @if (chatMessages.length === 0) {
+                    <span class="text-slate-400 italic text-center text-[10px]">Chưa có dự đoán nào...</span>
+                  }
+                  @for (msg of chatMessages; track msg.id) {
+                    <!-- Correct Guess Notice -->
+                    @if (msg.isCorrectGuess) {
+                      <div class="bg-green-500/20 text-green-400 border border-green-500/40 p-1.5 rounded-lg flex items-center gap-1 animate-pulse">
+                        <span>🎉</span>
+                        <span><strong>{{ msg.playerName }}</strong> đoán đúng!</span>
+                      </div>
+                    } @else if (msg.isSystem) {
+                      <!-- System notice -->
+                      <div class="text-indigo-300 italic flex items-center gap-1">
+                        <span>📢</span>
+                        <span>{{ msg.text }}</span>
+                      </div>
+                    } @else {
+                      <!-- Guess msg -->
+                      <div class="text-slate-200 flex items-center gap-1 truncate" [title]="msg.playerName + ': ' + msg.text">
+                        <span class="text-purple-300 shrink-0">{{ msg.playerName }}:</span>
+                        <span class="text-slate-100 bg-slate-900/40 px-1.5 py-0.5 rounded border border-slate-800/40">{{ msg.text }}</span>
+                      </div>
+                    }
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
       }
     </div>
   }
