@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { GameStateService } from '../../../services/game-state.service';
+import { SoundService } from '../../../services/sound.service';
 import { RoomState, Player, DrawStroke } from '../../../models/game.model';
 import { Subscription, Observable } from 'rxjs';
 import { RoomLobbyComponent } from '../room-lobby/room-lobby.component';
@@ -29,7 +30,6 @@ export class GameBoardComponent implements OnInit, OnDestroy {
   private subscription!: Subscription;
 
   public activeSettingsTab: 'preset' | 'custom' = 'preset';
-  public isMuted = false;
   public isCardMinimized = false;
   public cardPosition: 'left' | 'right' = 'left';
   public cardZoomState: 'normal' | 'zoomed' = 'normal';
@@ -37,7 +37,7 @@ export class GameBoardComponent implements OnInit, OnDestroy {
   public wordChoices: string[] = [];
   public currentRevealChainIndex = 0;
 
-  constructor(private gameState: GameStateService) {
+  constructor(private gameState: GameStateService, public soundService: SoundService) {
     this.loading$ = this.gameState.loading$;
   }
 
@@ -77,7 +77,7 @@ export class GameBoardComponent implements OnInit, OnDestroy {
       }
       if (state && state.phase === 'WORD_SELECTION') {
         if (this.isWordSelector && this.wordChoices.length === 0) {
-          const wordBank = this.gameState.getWordBank() || [];
+          const wordBank = this.gameState.getWordBank(state.settings?.wordCategory, state.settings?.customWordBank) || [];
           if (wordBank.length > 0) {
             const shuffled = [...wordBank].sort(() => 0.5 - Math.random());
             this.wordChoices = shuffled.slice(0, 3);
@@ -330,7 +330,7 @@ export class GameBoardComponent implements OnInit, OnDestroy {
   }
 
   public toggleMute(): void {
-    this.isMuted = !this.isMuted;
+    this.soundService.toggleMute();
   }
 
   public copyInviteLink(): void {
