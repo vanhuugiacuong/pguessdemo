@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { GameStateService } from '../../../services/game-state.service';
 import { SoundService } from '../../../services/sound.service';
@@ -37,57 +37,72 @@ export class GameBoardComponent implements OnInit, OnDestroy {
   public wordChoices: string[] = [];
   public currentRevealChainIndex = 0;
 
-  constructor(private gameState: GameStateService, public soundService: SoundService) {
+  constructor(
+    private gameState: GameStateService,
+    public soundService: SoundService,
+    private cdr: ChangeDetectorRef,
+    private ngZone: NgZone
+  ) {
     this.loading$ = this.gameState.loading$;
   }
 
   ngOnInit(): void {
     let previousPhase: string | null = null;
     this.subscription = this.gameState.roomState$.subscribe((state) => {
-      if (state) {
-        console.log(`[GameBoard] State updated: phase=${state.phase}, round=${state.roundNumber}, drawer=${state.drawerId}, guesser=${state.guesserId}, prevPhase=${previousPhase}`);
-        if (previousPhase && previousPhase !== state.phase) {
-          console.log(`[GameBoard] Phase transitioned: ${previousPhase} -> ${state.phase}`);
-          if (state.phase === 'WORD_SELECTION') {
-            this.showRoundIntro = true;
-            setTimeout(() => {
-              this.showRoundIntro = false;
-              console.log(`[GameBoard] showRoundIntro reset to false`);
-            }, 2500);
-          } else {
-            this.isTransitioning = true;
-            console.log(`[GameBoard] isTransitioning set to true`);
-            setTimeout(() => {
-              this.isTransitioning = false;
-              console.log(`[GameBoard] isTransitioning reset to false`);
-            }, 1000);
+      this.ngZone.run(() => {
+        if (state) {
+          console.log(`[GameBoard] State updated: phase=${state.phase}, round=${state.roundNumber}, drawer=${state.drawerId}, guesser=${state.guesserId}, prevPhase=${previousPhase}`);
+          if (previousPhase && previousPhase !== state.phase) {
+            console.log(`[GameBoard] Phase transitioned: ${previousPhase} -> ${state.phase}`);
+            if (state.phase === 'WORD_SELECTION') {
+              this.showRoundIntro = true;
+              this.cdr.detectChanges();
+              setTimeout(() => {
+                this.ngZone.run(() => {
+                  this.showRoundIntro = false;
+                  this.cdr.detectChanges();
+                  console.log(`[GameBoard] showRoundIntro reset to false`);
+                });
+              }, 2500);
+            } else {
+              this.isTransitioning = true;
+              this.cdr.detectChanges();
+              setTimeout(() => {
+                this.ngZone.run(() => {
+                  this.isTransitioning = false;
+                  this.cdr.detectChanges();
+                  console.log(`[GameBoard] isTransitioning reset to false`);
+                });
+              }, 1000);
+            }
           }
+          previousPhase = state.phase;
+        } else {
+          previousPhase = null;
         }
-        previousPhase = state.phase;
-      } else {
-        previousPhase = null;
-      }
 
-      this.roomState = state;
-      if (state) {
-        if (state.phase === 'REVEAL') {
-          const N = state.players.length;
-          this.currentRevealChainIndex = Math.floor(((state.roundNumber || 1) - 1) / N);
-        }
-      }
-      if (state && state.phase === 'WORD_SELECTION') {
-        if (this.isWordSelector && this.wordChoices.length === 0) {
-          const wordBank = this.gameState.getWordBank(state.settings?.wordCategory, state.settings?.customWordBank) || [];
-          if (wordBank.length > 0) {
-            const shuffled = [...wordBank].sort(() => 0.5 - Math.random());
-            this.wordChoices = shuffled.slice(0, 3);
-          } else {
-            this.wordChoices = ['Trái táo', 'Ngôi nhà', 'Con mèo'];
+        this.roomState = state;
+        if (state) {
+          if (state.phase === 'REVEAL') {
+            const N = state.players.length;
+            this.currentRevealChainIndex = Math.floor(((state.roundNumber || 1) - 1) / N);
           }
         }
-      } else {
-        this.wordChoices = [];
-      }
+        if (state && state.phase === 'WORD_SELECTION') {
+          if (this.isWordSelector && this.wordChoices.length === 0) {
+            const wordBank = this.gameState.getWordBank(state.settings?.wordCategory, state.settings?.customWordBank) || [];
+            if (wordBank.length > 0) {
+              const shuffled = [...wordBank].sort(() => 0.5 - Math.random());
+              this.wordChoices = shuffled.slice(0, 3);
+            } else {
+              this.wordChoices = ['Trái táo', 'Ngôi nhà', 'Con mèo'];
+            }
+          }
+        } else {
+          this.wordChoices = [];
+        }
+        this.cdr.detectChanges();
+      });
     });
   }
 
