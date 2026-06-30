@@ -12,7 +12,7 @@
   </div>
 
   <!-- Mode A Reveal -->
-  @if (!roomState?.guesserId) {
+  @if (roomState?.settings?.mode !== 'B') {
     <div class="text-center space-y-1 shrink-0">
       <span class="text-[10px] uppercase tracking-widest text-purple-300 font-bold block"
         >Vòng chơi kết thúc</span
@@ -77,7 +77,25 @@
   }
 
   <!-- Mode B Reveal (Gartic Phone Album Style) -->
-  @if (roomState?.guesserId) {
+  @if (roomState?.settings?.mode === 'B') {
+    <!-- Chain selector tabs in GAME_OVER phase -->
+    @if (roomState?.phase === 'GAME_OVER' && roomState?.modeBChains) {
+      <div class="flex flex-wrap gap-2 justify-center mb-6 w-full shrink-0">
+        @for (chain of roomState?.modeBChains; track $index) {
+          <button
+            (click)="selectChain($index)"
+            [ngClass]="{
+              'bg-[#4ce0aa] text-slate-950 border-black shadow-[3px_3px_0px_rgba(0,0,0,1)] scale-105 font-black': currentRevealChainIndex === $index,
+              'bg-slate-900 text-purple-200 border-black hover:bg-slate-800': currentRevealChainIndex !== $index
+            }"
+            class="px-4 py-2 border-3 font-extrabold text-xs md:text-sm uppercase tracking-wider rounded-2xl transition-all active:scale-95 cursor-pointer shadow-md"
+          >
+            Chuỗi của {{ chain.ownerName }}
+          </button>
+        }
+      </div>
+    }
+
     <div class="grid grid-cols-1 lg:grid-cols-5 gap-6 w-full max-w-6xl h-full flex-1 min-h-0">
       <!-- Left panel: NGƯỜI CHƠI -->
       <div class="lg:col-span-2 flex flex-col bg-slate-950/40 border-4 border-black rounded-3xl overflow-hidden shadow-[8px_8px_0px_rgba(0,0,0,0.3)] backdrop-blur-md h-[40vh] lg:h-auto">
@@ -225,19 +243,21 @@
           }
           
           <!-- Final Result Banner at bottom of scrollable thread -->
-          <div class="flex justify-center w-full pt-4 border-t border-slate-800">
-            @if (roomState?.finalGuessIsCorrect) {
-              <div class="bg-green-500 text-purple-950 border-3 border-black px-6 py-2.5 rounded-2xl font-black text-xs md:text-sm shadow-[3px_3px_0px_rgba(0,0,0,1)] flex items-center gap-2 animate-pulse">
-                <span>🎉</span>
-                <span>Từ khóa gốc là <strong class="underline">"{{ roomState?.currentWord }}"</strong>. Cả phòng chiến thắng!</span>
-              </div>
-            } @else {
-              <div class="bg-red-500 text-white border-3 border-black px-6 py-2.5 rounded-2xl font-black text-xs md:text-sm shadow-[3px_3px_0px_rgba(0,0,0,1)] flex items-center gap-2">
-                <span>❌</span>
-                <span>Từ khóa gốc là <strong class="underline">"{{ roomState?.currentWord }}"</strong>. Thử lại lần sau!</span>
-              </div>
-            }
-          </div>
+          @if (roomState?.guesserId) {
+            <div class="flex justify-center w-full pt-4 border-t border-slate-800">
+              @if (roomState?.finalGuessIsCorrect) {
+                <div class="bg-green-500 text-purple-950 border-3 border-black px-6 py-2.5 rounded-2xl font-black text-xs md:text-sm shadow-[3px_3px_0px_rgba(0,0,0,1)] flex items-center gap-2 animate-pulse">
+                  <span>🎉</span>
+                  <span>Từ khóa gốc là <strong class="underline">"{{ roomState?.currentWord }}"</strong>. Cả phòng chiến thắng!</span>
+                </div>
+              } @else {
+                <div class="bg-red-500 text-white border-3 border-black px-6 py-2.5 rounded-2xl font-black text-xs md:text-sm shadow-[3px_3px_0px_rgba(0,0,0,1)] flex items-center gap-2">
+                  <span>❌</span>
+                  <span>Từ khóa gốc là <strong class="underline">"{{ roomState?.currentWord }}"</strong>. Thử lại lần sau!</span>
+                </div>
+              }
+            </div>
+          }
         </div>
 
         <!-- Footer Return Button -->

@@ -35,15 +35,30 @@ export class GalleryRevealComponent {
 
   public get drawingPlayers(): Player[] {
     const state = this.roomState;
-    if (!state) return [];
-    // Trong lúc chơi (lượt đoán), người đoán chỉ được nhìn bức tranh cuối cùng trong chuỗi vẽ truyền tay
+    if (!state || !state.modeBChains || state.modeBChains.length === 0) return [];
+
     if (state.phase === 'PLAYING') {
-      const lastDrawerIndex = state.players.length - 2;
-      if (lastDrawerIndex >= 0) {
-        return [state.players[lastDrawerIndex]];
-      }
+      const N = state.players.length;
+      const k = Math.floor(((state.roundNumber || 1) - 1) / N);
+      const chain = state.modeBChains[k];
+      if (!chain) return [];
+
+      const drawingSteps = chain.steps.filter((s) => s.type === 'drawing');
+      if (drawingSteps.length === 0) return [];
+      const lastStep = drawingSteps[drawingSteps.length - 1];
+
+      const mockPlayer: Player = {
+        id: lastStep.player.id,
+        name: lastStep.player.name,
+        avatar: lastStep.player.avatar,
+        isBot: false,
+        score: 0,
+        isDrawing: false,
+        hasGuessedCorrectly: false,
+        drawingData: lastStep.content,
+      };
+      return [mockPlayer];
     }
-    // Khi kết thúc game/reveal, hiển thị toàn bộ chuỗi tranh vẽ của các họa sĩ
     return state.players.filter((p) => p.id !== state.guesserId);
   }
 

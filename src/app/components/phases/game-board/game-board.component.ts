@@ -35,6 +35,7 @@ export class GameBoardComponent implements OnInit, OnDestroy {
   public cardZoomState: 'normal' | 'zoomed' = 'normal';
 
   public wordChoices: string[] = [];
+  public currentRevealChainIndex = 0;
 
   constructor(private gameState: GameStateService) {
     this.loading$ = this.gameState.loading$;
@@ -44,16 +45,21 @@ export class GameBoardComponent implements OnInit, OnDestroy {
     let previousPhase: string | null = null;
     this.subscription = this.gameState.roomState$.subscribe((state) => {
       if (state) {
+        console.log(`[GameBoard] State updated: phase=${state.phase}, round=${state.roundNumber}, drawer=${state.drawerId}, guesser=${state.guesserId}, prevPhase=${previousPhase}`);
         if (previousPhase && previousPhase !== state.phase) {
+          console.log(`[GameBoard] Phase transitioned: ${previousPhase} -> ${state.phase}`);
           if (state.phase === 'WORD_SELECTION') {
             this.showRoundIntro = true;
             setTimeout(() => {
               this.showRoundIntro = false;
+              console.log(`[GameBoard] showRoundIntro reset to false`);
             }, 2500);
           } else {
             this.isTransitioning = true;
+            console.log(`[GameBoard] isTransitioning set to true`);
             setTimeout(() => {
               this.isTransitioning = false;
+              console.log(`[GameBoard] isTransitioning reset to false`);
             }, 1000);
           }
         }
@@ -63,6 +69,12 @@ export class GameBoardComponent implements OnInit, OnDestroy {
       }
 
       this.roomState = state;
+      if (state) {
+        if (state.phase === 'REVEAL') {
+          const N = state.players.length;
+          this.currentRevealChainIndex = Math.floor(((state.roundNumber || 1) - 1) / N);
+        }
+      }
       if (state && state.phase === 'WORD_SELECTION') {
         if (this.isWordSelector && this.wordChoices.length === 0) {
           const wordBank = this.gameState.getWordBank() || [];
@@ -86,7 +98,9 @@ export class GameBoardComponent implements OnInit, OnDestroy {
     if (mode === 'A') {
       return state.drawerId === this.myPlayerId;
     } else {
-      return state.roundNumber === 1 && state.guesserId === this.myPlayerId;
+      const N = state.players.length;
+      const r = ((state.roundNumber || 1) - 1) % N + 1;
+      return r === 1 && state.drawerId === this.myPlayerId;
     }
   }
 
@@ -98,8 +112,8 @@ export class GameBoardComponent implements OnInit, OnDestroy {
       const drawer = state.players.find((p) => p.id === state.drawerId);
       return drawer ? drawer.name : 'Họa sĩ';
     } else {
-      const guesser = state.players.find((p) => p.id === state.guesserId);
-      return guesser ? guesser.name : 'Người đoán';
+      const drawer = state.players.find((p) => p.id === state.drawerId);
+      return drawer ? drawer.name : 'Họa sĩ';
     }
   }
 
@@ -109,6 +123,10 @@ export class GameBoardComponent implements OnInit, OnDestroy {
 
   public onConfirmCustomWord(word: string): void {
     this.gameState.selectWord(word);
+  }
+
+  public selectRevealChain(index: number): void {
+    this.currentRevealChainIndex = index;
   }
 
   ngOnDestroy(): void {
@@ -130,7 +148,7 @@ export class GameBoardComponent implements OnInit, OnDestroy {
   }
 
   public get isReveal(): boolean {
-    return this.roomState?.phase === 'REVEAL';
+    return this.roomState?.phase === 'REVEAL' || this.roomState?.phase === 'GAME_OVER';
   }
 
   public get isGameOver(): boolean {
@@ -162,15 +180,36 @@ export class GameBoardComponent implements OnInit, OnDestroy {
   }
 
   public get previousPlayerDrawing(): DrawStroke[] | undefined {
-    if (!this.roomState || !this.roomState.roundNumber) return undefined;
-    const prevIndex = this.roomState.roundNumber - 2;
-    if (prevIndex < 0) return undefined;
-    return this.roomState.players[prevIndex]?.drawingData;
+    if (!this.roomState || !this.roomState.roundNumber || !this.roomState.modeBChains) return undefined;
+    const mode = this.roomState.settings?.mode || 'A';
+    if (mode === 'A') return undefined;
+
+    const N = this.roomState.players.length;
+    const k = Math.floor((this.roomState.roundNumber - 1) / N);
+    const chain = this.roomState.modeBChains[k];
+    if (!chain) return undefined;
+
+    const drawingSteps = chain.steps.filter((s) => s.type === 'drawing');
+    if (drawingSteps.length === 0) return undefined;
+    return drawingSteps[drawingSteps.length - 1].content;
   }
 
   public get isDrawingTurn(): boolean {
     if (!this.roomState) return false;
-    return (this.roomState.roundNumber || 0) < this.roomState.players.length;
+    const mode = this.roomState.settings?.mode || 'A';
+    if (mode === 'A') {
+      return true;
+    } else {
+      const N = this.roomState.players.length;
+      const r = ((this.roomState.roundNumber || 1) - 1) % N + 1;
+      return r < N;
+    }
+  }
+
+  public get currentChainRound(): number {
+    if (!this.roomState) return 1;
+    const N = this.roomState.players.length;
+    return ((this.roomState.roundNumber || 1) - 1) % N + 1;
   }
 
   public get currentTurnPlayerName(): string {
@@ -203,43 +242,19 @@ export class GameBoardComponent implements OnInit, OnDestroy {
 
   public get albumSteps(): any[] {
     if (!this.roomState) return [];
-    const steps: any[] = [];
 
-    // Step 1: Starting keyword (from first player)
-    const firstPlayer = this.roomState.players[0];
-    if (firstPlayer && this.roomState.currentWord) {
-      steps.push({
-        type: 'word',
-        player: firstPlayer,
-        content: `HÃY VẼ: "${this.roomState.currentWord.toUpperCase()}"`
-      });
+    const mode = this.roomState.settings?.mode || 'A';
+    if (mode === 'A') {
+      return [];
     }
 
-    // Step 2..N-1: Drawings in order
-    const drawers = this.roomState.players.filter(p => p.id !== this.roomState?.guesserId);
-    drawers.forEach((p, index) => {
-      if (p.drawingData && p.drawingData.length > 0) {
-        steps.push({
-          type: 'drawing',
-          player: p,
-          content: p.drawingData,
-          index: index + 1
-        });
-      }
-    });
-
-    // Step N: Guess from Guesser
-    const guesser = this.roomState.players.find(p => p.id === this.roomState?.guesserId);
-    if (guesser && this.roomState.finalGuess) {
-      steps.push({
-        type: 'guess',
-        player: guesser,
-        content: `Đoán là: "${this.roomState.finalGuess}"`,
-        isCorrect: this.roomState.finalGuessIsCorrect
-      });
+    if (!this.roomState.modeBChains || this.roomState.modeBChains.length === 0) {
+      return [];
     }
 
-    return steps;
+    const idx = Math.min(this.currentRevealChainIndex, this.roomState.modeBChains.length - 1);
+    const chain = this.roomState.modeBChains[idx];
+    return chain ? chain.steps : [];
   }
 
   public get sortedPlayers(): Player[] {
@@ -350,6 +365,13 @@ export class GameBoardComponent implements OnInit, OnDestroy {
 
   public onStartGame(): void {
     if (!this.isHost) return;
+    const mode = this.roomState?.settings?.mode || 'A';
+    const playersCount = this.roomState?.players?.length || 0;
+    const minPlayers = mode === 'B' ? 3 : 2;
+    if (playersCount < minPlayers) {
+      alert(`Chế độ Phá băng yêu cầu tối thiểu ${minPlayers} người chơi để bắt đầu!`);
+      return;
+    }
     this.gameState.startGame();
   }
 

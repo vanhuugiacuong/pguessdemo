@@ -5,7 +5,7 @@ import { RoomState, GameSettings, ChatMessage, DrawStroke } from '../models/game
 
 // Cấu hình URL Backend để test qua internet (ví dụ: Ngrok, LocalTunnel, hoặc khi deploy thực tế).
 // Để trống ('') nếu chạy local thông thường để tự động nhận dạng IP.
-const BACKEND_OVERRIDE_URL = 'https://pguess-api.onrender.com';
+const BACKEND_OVERRIDE_URL = '';
 
 @Injectable({
   providedIn: 'root'
@@ -170,7 +170,13 @@ export class SocketService {
   }
 
   public selectWord(roomId: string, word: string): void {
-    this.socket.emit('select_word', { roomId, word });
+    this.socket.emit('select_word', { roomId, word }, (response: any) => {
+      if (response && response.error) {
+        console.error('Select word error:', response.error);
+        this.errorSubject.next(response.error);
+        alert(response.error);
+      }
+    });
   }
 
   public sendStroke(roomId: string, stroke: DrawStroke): void {
@@ -186,7 +192,13 @@ export class SocketService {
   }
 
   public submitModeBGuess(roomId: string, guess: string): void {
-    this.socket.emit('submit_guess', { roomId, guess });
+    this.socket.emit('submit_guess', { roomId, guess }, (response: any) => {
+      if (response && response.error) {
+        console.error('Submit guess error:', response.error);
+        this.errorSubject.next(response.error);
+        alert(response.error);
+      }
+    });
   }
 
   public submitDrawing(roomId: string, strokes: DrawStroke[]): Observable<any> {

@@ -107,6 +107,7 @@
         [isDrawingTurn]="isDrawingTurn"
         [currentTurnPlayerName]="currentTurnPlayerName"
         [totalDrawingTurns]="totalDrawingTurns"
+        [currentChainRound]="currentChainRound"
         (quit)="onQuit()"
       ></app-game-playing>
     }
@@ -119,6 +120,7 @@
         [currentDrawerPlayer]="currentDrawerPlayer"
         [albumSteps]="albumSteps"
         [sortedPlayers]="sortedPlayers"
+        [(currentRevealChainIndex)]="currentRevealChainIndex"
         (quit)="onQuit()"
       ></app-game-reveal>
     }

@@ -392,7 +392,7 @@ export class CanvasComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private renderStroke(stroke: DrawStroke, ctx: CanvasRenderingContext2D): void {
-    if (stroke.points.length === 0) return;
+    if (!stroke || !stroke.points || stroke.points.length === 0) return;
 
     ctx.beginPath();
     const type = stroke.shapeType || (stroke.isEraser ? 'eraser' : 'brush');
