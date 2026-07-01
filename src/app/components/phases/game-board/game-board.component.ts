@@ -46,11 +46,16 @@ export class GameBoardComponent implements OnInit, OnDestroy {
       if (state) {
         if (previousPhase && previousPhase !== state.phase) {
           if (state.phase === 'WORD_SELECTION') {
+            // Round intro banner before each round
             this.showRoundIntro = true;
             setTimeout(() => {
               this.showRoundIntro = false;
             }, 2500);
-          } else {
+          } else if (
+            state.phase !== 'LOBBY' &&
+            state.phase !== 'GAME_OVER'
+          ) {
+            // Only show the generic 1s transition spinner between mid-game phases
             this.isTransitioning = true;
             setTimeout(() => {
               this.isTransitioning = false;

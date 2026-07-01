@@ -111,8 +111,8 @@
       ></app-game-playing>
     }
 
-    <!-- 3. REVEAL / SCOREBOARD BREAK PHASE -->
-    @if (isReveal) {
+    <!-- 3. REVEAL / SCOREBOARD BREAK PHASE + GAME_OVER -->
+    @if (isReveal || isGameOver) {
       <app-game-reveal
         [roomState]="roomState"
         [myPlayerId]="myPlayerId"
