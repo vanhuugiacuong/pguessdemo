@@ -76,7 +76,11 @@
             }
             @if (!readOnly) {
               <span>
-                HÃY VẼ: {{ roomState?.currentWord | uppercase }}
+                @if (roomState?.settings?.mode === 'B' && ((roomState?.roundNumber ?? 1) - 1) % (roomState?.players?.length ?? 1) + 1 > 1) {
+                  <span>HÃY VẼ LẠI BỨC TRANH NÀY</span>
+                } @else {
+                  <span>HÃY VẼ: {{ roomState?.currentWord | uppercase }}</span>
+                }
               </span>
             }
           </div>

@@ -11,8 +11,8 @@
     </button>
   </div>
 
-  <!-- Mode A Reveal (mid-round result) -->
-  @if (!roomState?.guesserId && roomState?.phase === 'REVEAL') {
+  <!-- Mode A Reveal -->
+  @if (roomState?.settings?.mode !== 'B' && roomState?.phase === 'REVEAL') {
     <div class="text-center space-y-1 shrink-0">
       <span class="text-[10px] uppercase tracking-widest text-purple-300 font-bold block"
         >Vòng chơi kết thúc</span
@@ -147,7 +147,25 @@
   }
 
   <!-- Mode B Reveal (Gartic Phone Album Style) -->
-  @if (roomState?.guesserId) {
+  @if (roomState?.settings?.mode === 'B') {
+    <!-- Chain selector tabs in GAME_OVER phase -->
+    @if (roomState?.phase === 'GAME_OVER' && roomState?.modeBChains) {
+      <div class="flex flex-wrap gap-2 justify-center mb-6 w-full shrink-0">
+        @for (chain of roomState?.modeBChains; track $index) {
+          <button
+            (click)="selectChain($index)"
+            [ngClass]="{
+              'bg-[#4ce0aa] text-slate-950 border-black shadow-[3px_3px_0px_rgba(0,0,0,1)] scale-105 font-black': currentRevealChainIndex === $index,
+              'bg-slate-900 text-purple-200 border-black hover:bg-slate-800': currentRevealChainIndex !== $index
+            }"
+            class="px-4 py-2 border-3 font-extrabold text-xs md:text-sm uppercase tracking-wider rounded-2xl transition-all active:scale-95 cursor-pointer shadow-md"
+          >
+            Chuỗi của {{ chain.ownerName }}
+          </button>
+        }
+      </div>
+    }
+
     <div class="grid grid-cols-1 lg:grid-cols-5 gap-6 w-full max-w-6xl h-full flex-1 min-h-0">
       <!-- Left panel: NGƯỜI CHƠI -->
       <div class="lg:col-span-2 flex flex-col bg-slate-950/40 border-4 border-black rounded-3xl overflow-hidden shadow-[8px_8px_0px_rgba(0,0,0,0.3)] backdrop-blur-md h-[40vh] lg:h-auto">
@@ -194,15 +212,15 @@
 
         <!-- Timeline list -->
         <div class="flex-1 p-6 overflow-y-auto space-y-6">
-          @for (step of albumSteps; track step) {
+          @for (step of albumSteps; track $index) {
             <!-- Align Left (Other Players) -->
-            @if (step.player.id !== myPlayerId) {
+            @if (step.player?.id !== myPlayerId) {
               <div class="flex items-start gap-3 justify-start w-full">
                 <div class="w-9 h-9 rounded-full border-3 border-black bg-purple-300 flex items-center justify-center p-0.5 overflow-hidden shadow-[2px_2px_0px_rgba(0,0,0,1)] shrink-0 mt-2">
-                  <img [src]="'/assets/user-logo/' + (step.player.avatar || 'avatar_1.png')" alt="Avatar" class="w-full h-full object-contain" />
+                  <img [src]="'/assets/user-logo/' + (step.player?.avatar || 'avatar_1.png')" alt="Avatar" class="w-full h-full object-contain" />
                 </div>
                 <div class="relative max-w-[75%] flex flex-col items-start space-y-1">
-                  <span class="block text-[10px] font-black uppercase text-pink-300 tracking-wider">{{ step.player.name }}</span>
+                  <span class="block text-[10px] font-black uppercase text-pink-300 tracking-wider">{{ step.player?.name }}</span>
                   
                   @if (step.type === 'word') {
                     <div class="bg-white text-slate-950 px-4 py-2 border-3 border-black rounded-2xl rounded-tl-none shadow-[3px_3px_0px_rgba(0,0,0,1)] relative text-left">
@@ -245,10 +263,10 @@
             }
 
             <!-- Align Right (Current User / You) -->
-            @if (step.player.id === myPlayerId) {
+            @if (step.player?.id === myPlayerId) {
               <div class="flex items-start gap-3 justify-end w-full">
                 <div class="relative max-w-[75%] flex flex-col items-end space-y-1">
-                  <span class="block text-[10px] font-black uppercase text-amber-300 tracking-wider">Bạn ({{ step.player.name }})</span>
+                  <span class="block text-[10px] font-black uppercase text-amber-300 tracking-wider">Bạn ({{ step.player?.name }})</span>
                   
                   @if (step.type === 'word') {
                     <div class="bg-amber-100 text-slate-950 px-4 py-2 border-3 border-black rounded-2xl rounded-tr-none shadow-[3px_3px_0px_rgba(0,0,0,1)] relative text-left">
@@ -288,26 +306,28 @@
                   }
                 </div>
                 <div class="w-9 h-9 rounded-full border-3 border-black bg-amber-300 flex items-center justify-center p-0.5 overflow-hidden shadow-[2px_2px_0px_rgba(0,0,0,1)] shrink-0 mt-2">
-                  <img [src]="'/assets/user-logo/' + (step.player.avatar || 'avatar_1.png')" alt="Avatar" class="w-full h-full object-contain" />
+                  <img [src]="'/assets/user-logo/' + (step.player?.avatar || 'avatar_1.png')" alt="Avatar" class="w-full h-full object-contain" />
                 </div>
               </div>
             }
           }
           
           <!-- Final Result Banner at bottom of scrollable thread -->
-          <div class="flex justify-center w-full pt-4 border-t border-slate-800">
-            @if (roomState?.finalGuessIsCorrect) {
-              <div class="bg-green-500 text-purple-950 border-3 border-black px-6 py-2.5 rounded-2xl font-black text-xs md:text-sm shadow-[3px_3px_0px_rgba(0,0,0,1)] flex items-center gap-2 animate-pulse">
-                <span>🎉</span>
-                <span>Từ khóa gốc là <strong class="underline">"{{ roomState?.currentWord }}"</strong>. Cả phòng chiến thắng!</span>
-              </div>
-            } @else {
-              <div class="bg-red-500 text-white border-3 border-black px-6 py-2.5 rounded-2xl font-black text-xs md:text-sm shadow-[3px_3px_0px_rgba(0,0,0,1)] flex items-center gap-2">
-                <span>❌</span>
-                <span>Từ khóa gốc là <strong class="underline">"{{ roomState?.currentWord }}"</strong>. Thử lại lần sau!</span>
-              </div>
-            }
-          </div>
+          @if (roomState?.guesserId) {
+            <div class="flex justify-center w-full pt-4 border-t border-slate-800">
+              @if (roomState?.finalGuessIsCorrect) {
+                <div class="bg-green-500 text-purple-950 border-3 border-black px-6 py-2.5 rounded-2xl font-black text-xs md:text-sm shadow-[3px_3px_0px_rgba(0,0,0,1)] flex items-center gap-2 animate-pulse">
+                  <span>🎉</span>
+                  <span>Từ khóa gốc là <strong class="underline">"{{ roomState?.currentWord }}"</strong>. Cả phòng chiến thắng!</span>
+                </div>
+              } @else {
+                <div class="bg-red-500 text-white border-3 border-black px-6 py-2.5 rounded-2xl font-black text-xs md:text-sm shadow-[3px_3px_0px_rgba(0,0,0,1)] flex items-center gap-2">
+                  <span>❌</span>
+                  <span>Từ khóa gốc là <strong class="underline">"{{ roomState?.currentWord }}"</strong>. Thử lại lần sau!</span>
+                </div>
+              }
+            </div>
+          }
         </div>
 
         <!-- Footer Return Button -->
@@ -329,6 +349,77 @@
           }
         </div>
       </div>
+    </div>
+  }
+
+  <!-- Mode A Game Over (Compact Ranking List) -->
+  @if (roomState?.settings?.mode !== 'B' && roomState?.phase === 'GAME_OVER') {
+    <div class="text-center space-y-1.5 shrink-0">
+      <span class="text-3xl">🏆</span>
+      <h2 class="text-2xl md:text-3xl font-black text-slate-100 uppercase tracking-wider">Trò chơi kết thúc!</h2>
+      <p class="text-slate-300 text-xs font-bold">
+        Bảng xếp hạng chung cuộc của phòng chơi
+      </p>
+    </div>
+
+    <!-- Full rankings list (replacing podium) -->
+    <div class="w-full max-w-md mx-auto space-y-2.5 max-h-[300px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-transparent">
+      @for (p of sortedPlayers; track p.id; let idx = $index) {
+        <div
+          [ngClass]="{
+            'bg-yellow-400 text-slate-950 border-yellow-600 shadow-[3px_3px_0px_rgba(234,179,8,0.4)]': idx === 0,
+            'bg-slate-300 text-slate-950 border-slate-400 shadow-[3px_3px_0px_rgba(203,213,225,0.4)]': idx === 1,
+            'bg-amber-600 text-slate-100 border-amber-700 shadow-[3px_3px_0px_rgba(180,83,9,0.4)]': idx === 2,
+            'bg-slate-900/60 text-slate-200 border-slate-850 shadow-[3px_3px_0px_rgba(0,0,0,0.2)]': idx > 2,
+            'ring-3 ring-purple-500': p.id === myPlayerId
+          }"
+          class="flex items-center justify-between p-3.5 border-3 border-black rounded-2xl relative transition-all"
+        >
+          <div class="flex items-center gap-3">
+            <!-- Rank Emoji / Badge -->
+            <span class="text-sm font-black w-6 text-center">
+              @if (idx === 0) { 👑 }
+              @else if (idx === 1) { 🥈 }
+              @else if (idx === 2) { 🥉 }
+              @else { #{{ idx + 1 }} }
+            </span>
+            <div class="w-8 h-8 rounded-full border-2 border-black bg-purple-300 flex items-center justify-center p-0.5 overflow-hidden shrink-0">
+              <img [src]="'/assets/user-logo/' + (p.avatar || '2.svg')" alt="Avatar" class="w-full h-full object-contain" />
+            </div>
+            <span class="font-extrabold text-xs truncate max-w-[140px]">{{ p.name }}</span>
+            @if (p.id === myPlayerId) {
+              <span
+                [ngClass]="{
+                  'bg-black/20 text-slate-950': idx < 2,
+                  'bg-black/20 text-slate-100': idx === 2,
+                  'bg-purple-500/20 text-purple-400 border border-purple-500/40': idx > 2
+                }"
+                class="text-[8px] px-1.5 py-0.5 rounded font-black uppercase"
+              >Bạn</span>
+            }
+          </div>
+          <span class="font-mono font-black text-xs">{{ p.score }} pts</span>
+        </div>
+      }
+    </div>
+
+    <!-- Restart/Lobby buttons -->
+    <div class="w-full max-w-md mx-auto pt-2 shrink-0">
+      @if (isHost) {
+        <button
+          (click)="onReturnToLobby()"
+          class="w-full py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-extrabold rounded-2xl shadow-xl shadow-blue-950/50 border-3 border-black active:scale-95 transition-all cursor-pointer text-center text-sm"
+        >
+          🔄 ĐƯA CẢ PHÒNG VỀ PHÒNG CHỜ
+        </button>
+      } @else {
+        <button
+          (click)="onQuit()"
+          class="w-full py-3.5 bg-red-600 hover:bg-red-500 text-white font-extrabold rounded-2xl shadow-xl shadow-red-950/50 border-3 border-black active:scale-95 transition-all cursor-pointer text-center text-sm"
+        >
+          🚪 RỜI PHÒNG
+        </button>
+      }
     </div>
   }
 </div>

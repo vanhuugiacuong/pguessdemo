@@ -28,6 +28,7 @@ export class GamePlayingComponent implements OnInit, OnDestroy {
   @Input() isDrawingTurn = false;
   @Input() currentTurnPlayerName = '';
   @Input() totalDrawingTurns = 0;
+  @Input() currentChainRound = 1;
 
   @Output() quit = new EventEmitter<void>();
 
