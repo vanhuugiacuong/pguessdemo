@@ -218,6 +218,12 @@ export class GameStateService {
     }
   }
 
+  public setReadyForNextRound(ready: boolean): void {
+    if (this.currentRoomId) {
+      this.socketService.readyForNextRound(this.currentRoomId, ready);
+    }
+  }
+
   public resetRoom(): void {
     this.store.dispatch(RoomActions.resetRoom());
     if (this.currentRoomId) {

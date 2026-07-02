@@ -9,6 +9,7 @@ export interface Player {
   drawingData?: DrawStroke[]; // Used in Mode B to store completed drawings for reveal
   avatar?: string;
   drawingWord?: string;
+  readyForNextRound?: boolean;
 }
 
 export type GameMode = 'A' | 'B';
@@ -67,6 +68,7 @@ export interface RoomState {
   revealedIndexes?: number[];
   hintsRevealed?: number;
   modeBChains?: ModeBChain[];
+  transitionCountdownStarted?: boolean;
 }
 
 export interface ModeBChainStep {

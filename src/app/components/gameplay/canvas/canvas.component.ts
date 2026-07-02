@@ -12,11 +12,15 @@ import { DrawStroke, DrawPoint, RoomState } from '../../../models/game.model';
 import { GameStateService } from '../../../services/game-state.service';
 import { Subscription, Observable } from 'rxjs';
 import { SoundService } from '../../../services/sound.service';
+import { IconComponent } from '../../shared/icon/icon.component';
 
 @Component({
   selector: 'app-canvas',
   standalone: true,
-  imports: [CommonModule],
+  imports: [
+    CommonModule,
+    IconComponent,
+  ],
   templateUrl: './canvas.component.html',
   styleUrl: './canvas.component.css',
 })

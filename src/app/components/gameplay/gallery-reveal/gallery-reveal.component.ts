@@ -62,10 +62,13 @@ export class GalleryRevealComponent {
     return state.players.filter((p) => p.id !== state.guesserId);
   }
 
+  public isSubmitting = false;
+
   public onSubmitGuess(): void {
     const text = this.guessText.trim();
-    if (!text) return;
+    if (!text || this.isSubmitting) return;
 
+    this.isSubmitting = true;
     this.gameState.submitModeBGuess(text);
     this.guessText = '';
   }

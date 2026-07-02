@@ -8,6 +8,7 @@ import { RoomLobbyComponent } from '../room-lobby/room-lobby.component';
 import { WordSelectionComponent } from '../word-selection/word-selection.component';
 import { GamePlayingComponent } from '../game-playing/game-playing.component';
 import { GameRevealComponent } from '../game-reveal/game-reveal.component';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-game-board',
@@ -41,7 +42,8 @@ export class GameBoardComponent implements OnInit, OnDestroy {
     private gameState: GameStateService,
     public soundService: SoundService,
     private cdr: ChangeDetectorRef,
-    private ngZone: NgZone
+    private ngZone: NgZone,
+    private router: Router
   ) {
     this.loading$ = this.gameState.loading$;
   }
@@ -312,19 +314,19 @@ export class GameBoardComponent implements OnInit, OnDestroy {
     this.gameState.updateRoomSettings({ mode });
   }
 
-  public changeTimeLimit(limit: number): void {
+  public changeTimeLimit(limit: any): void {
     if (!this.isHost) return;
-    this.gameState.updateRoomSettings({ drawTimeLimit: limit });
+    this.gameState.updateRoomSettings({ drawTimeLimit: Number(limit) });
   }
 
-  public changeMaxPlayers(limit: number): void {
+  public changeMaxPlayers(limit: any): void {
     if (!this.isHost) return;
-    this.gameState.updateRoomSettings({ maxPlayers: limit });
+    this.gameState.updateRoomSettings({ maxPlayers: Number(limit) });
   }
 
-  public changeBotCount(bots: number): void {
+  public changeBotCount(bots: any): void {
     if (!this.isHost) return;
-    this.gameState.updateRoomSettings({ botCount: bots });
+    this.gameState.updateRoomSettings({ botCount: Number(bots) });
   }
 
   public changeWordCategory(category: string): void {
@@ -392,5 +394,6 @@ export class GameBoardComponent implements OnInit, OnDestroy {
 
   public onQuit(): void {
     this.gameState.resetRoom();
+    this.router.navigate(['/']);
   }
 }

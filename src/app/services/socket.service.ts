@@ -201,6 +201,10 @@ export class SocketService {
     });
   }
 
+  public readyForNextRound(roomId: string, ready: boolean): void {
+    this.socket.emit('ready_for_next_round', { roomId, ready });
+  }
+
   public submitDrawing(roomId: string, strokes: DrawStroke[]): Observable<any> {
     return new Observable((observer) => {
       this.socket.emit('submit_drawing', { roomId, strokes }, (response: any) => {
