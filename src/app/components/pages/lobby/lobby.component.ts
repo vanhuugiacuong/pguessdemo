@@ -1,20 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { GameStateService } from '../../../services/game-state.service';
 import { GameSettings, GameMode } from '../../../models/game.model';
 import { Observable } from 'rxjs';
-import {
-  LucidePlay,
-  LucideRefreshCw,
-  LucideChevronLeft,
-  LucideChevronRight,
-  LucideMusic,
-  LucideVideo,
-  LucideMessageSquare,
-  LucideCamera,
-} from '@lucide/angular';
+import { IconComponent } from '../../shared/icon/icon.component';
+import { trigger, transition, style, animate } from '@angular/animations';
 
 interface CarouselStep {
   image: string;
@@ -28,17 +20,18 @@ interface CarouselStep {
   imports: [
     CommonModule,
     FormsModule,
-    LucidePlay,
-    LucideRefreshCw,
-    LucideChevronLeft,
-    LucideChevronRight,
-    LucideMusic,
-    LucideVideo,
-    LucideMessageSquare,
-    LucideCamera,
+    IconComponent,
   ],
   templateUrl: './lobby.component.html',
   styleUrl: './lobby.component.css',
+  animations: [
+    trigger('tabChange', [
+      transition(':enter', [
+        style({ opacity: 0, transform: 'translateY(8px)' }),
+        animate('250ms cubic-bezier(0.34, 1.56, 0.64, 1)', style({ opacity: 1, transform: 'translateY(0)' }))
+      ])
+    ])
+  ]
 })
 export class LobbyComponent implements OnInit {
   public loading$: Observable<boolean>;
@@ -113,7 +106,8 @@ export class LobbyComponent implements OnInit {
 
   constructor(
     private gameState: GameStateService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private router: Router
   ) {
     this.loading$ = this.gameState.loading$;
   }
@@ -198,5 +192,21 @@ export class LobbyComponent implements OnInit {
       return;
     }
     this.gameState.joinRoom(this.roomIdToJoin.trim(), this.nickname, this.currentAvatar);
+  }
+
+  public setActiveTab(tab: 'create' | 'join'): void {
+    this.activeTab = tab;
+    if (tab === 'create') {
+      this.isDirectJoin = false;
+      this.router.navigate(['/']);
+    }
+  }
+
+  public onRoomIdChange(value: string): void {
+    this.roomIdToJoin = value;
+    if (this.isDirectJoin) {
+      this.isDirectJoin = false;
+      this.router.navigate(['/']);
+    }
   }
 }

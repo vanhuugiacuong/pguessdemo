@@ -107,18 +107,20 @@
         [isDrawingTurn]="isDrawingTurn"
         [currentTurnPlayerName]="currentTurnPlayerName"
         [totalDrawingTurns]="totalDrawingTurns"
+        [currentChainRound]="currentChainRound"
         (quit)="onQuit()"
       ></app-game-playing>
     }
 
-    <!-- 3. REVEAL / SCOREBOARD BREAK PHASE -->
-    @if (isReveal) {
+    <!-- 3. REVEAL / SCOREBOARD BREAK PHASE + GAME_OVER -->
+    @if (isReveal || isGameOver) {
       <app-game-reveal
         [roomState]="roomState"
         [myPlayerId]="myPlayerId"
         [currentDrawerPlayer]="currentDrawerPlayer"
         [albumSteps]="albumSteps"
         [sortedPlayers]="sortedPlayers"
+        [(currentRevealChainIndex)]="currentRevealChainIndex"
         (quit)="onQuit()"
       ></app-game-reveal>
     }

@@ -8,6 +8,8 @@ export interface Player {
   lastGuessTime?: number;
   drawingData?: DrawStroke[]; // Used in Mode B to store completed drawings for reveal
   avatar?: string;
+  drawingWord?: string;
+  readyForNextRound?: boolean;
 }
 
 export type GameMode = 'A' | 'B';
@@ -65,4 +67,25 @@ export interface RoomState {
   finalGuessIsCorrect?: boolean;
   revealedIndexes?: number[];
   hintsRevealed?: number;
+  modeBChains?: ModeBChain[];
+  transitionCountdownStarted?: boolean;
+}
+
+export interface ModeBChainStep {
+  type: 'word' | 'drawing' | 'guess';
+  player: {
+    id: string;
+    name: string;
+    avatar?: string;
+  };
+  content: any; // string for word/guess, DrawStroke[] for drawing
+  isCorrect?: boolean;
+  index?: number;
+}
+
+export interface ModeBChain {
+  ownerId: string;
+  ownerName: string;
+  word: string;
+  steps: ModeBChainStep[];
 }

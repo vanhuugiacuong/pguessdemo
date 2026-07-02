@@ -2,13 +2,8 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RoomState } from '../../../models/game.model';
-import {
-  LucidePlay,
-  LucideVolume2,
-  LucideVolumeX,
-  LucideCopy,
-  LucideArrowLeft
-} from '@lucide/angular';
+import { SoundService } from '../../../services/sound.service';
+import { IconComponent } from '../../shared/icon/icon.component';
 
 @Component({
   selector: 'app-room-lobby',
@@ -16,11 +11,7 @@ import {
   imports: [
     CommonModule,
     FormsModule,
-    LucidePlay,
-    LucideVolume2,
-    LucideVolumeX,
-    LucideCopy,
-    LucideArrowLeft
+    IconComponent
   ],
   templateUrl: './room-lobby.component.html'
 })
@@ -59,22 +50,23 @@ export class RoomLobbyComponent {
   ];
 
   public activeSettingsTab: 'preset' | 'custom' = 'preset';
-  public isMuted = false;
+
+  constructor(public soundService: SoundService) {}
 
   public changeModeAction(mode: 'A' | 'B'): void {
     this.changeMode.emit(mode);
   }
 
-  public changeTimeLimitAction(limit: number): void {
-    this.changeTimeLimit.emit(limit);
+  public changeTimeLimitAction(limit: any): void {
+    this.changeTimeLimit.emit(Number(limit));
   }
 
-  public changeMaxPlayersAction(limit: number): void {
-    this.changeMaxPlayers.emit(limit);
+  public changeMaxPlayersAction(limit: any): void {
+    this.changeMaxPlayers.emit(Number(limit));
   }
 
-  public changeBotCountAction(bots: number): void {
-    this.changeBotCount.emit(bots);
+  public changeBotCountAction(bots: any): void {
+    this.changeBotCount.emit(Number(bots));
   }
 
   public changeWordCategoryAction(category: string): void {
@@ -94,7 +86,7 @@ export class RoomLobbyComponent {
   }
 
   public toggleMute(): void {
-    this.isMuted = !this.isMuted;
+    this.soundService.toggleMute();
   }
 
   public copyInviteLinkAction(): void {

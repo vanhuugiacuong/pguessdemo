@@ -74,25 +74,32 @@
             <span class="block text-[10px] font-black uppercase text-green-300 tracking-wider">Bạn (Người đoán)</span>
             
             <div class="bg-slate-900 border-3 border-black p-4 rounded-2xl rounded-tr-none shadow-[4px_4px_0px_rgba(0,0,0,1)] w-full">
-              <div class="text-[11px] font-bold text-slate-300 mb-2">
-                🧐 Hãy đoán xem bức tranh trên vẽ từ khóa gì. Bạn chỉ được đoán một lần duy nhất!
-              </div>
-              <form (submit)="onSubmitGuess(); $event.preventDefault()" class="flex gap-2">
-                <input
-                  type="text"
-                  [(ngModel)]="guessText"
-                  name="galleryGuess"
-                  placeholder="Họ đang vẽ từ gì? Nhập vào đây..."
-                  autocomplete="off"
-                  class="flex-1 px-3 py-2 rounded-xl bg-purple-950/40 border-3 border-black text-white placeholder-purple-300/30 focus:outline-none focus:border-green-500 font-bold transition-all text-xs shadow-inner"
-                />
-                <button
-                  type="submit"
-                  class="px-4 py-2 bg-green-500 hover:bg-green-400 active:scale-95 transition-all text-white text-[10px] font-black uppercase tracking-wider rounded-xl border-3 border-black shadow-[2px_2px_0px_rgba(0,0,0,1)] cursor-pointer"
-                >
-                  Nộp
-                </button>
-              </form>
+              @if (isSubmitting) {
+                <div class="flex items-center gap-2.5 py-2">
+                  <div class="w-5 h-5 border-3 border-green-500 border-t-transparent rounded-full animate-spin"></div>
+                  <span class="text-xs font-black text-slate-300">Đã gửi dự đoán, đang chuẩn bị hiển thị kết quả...</span>
+                </div>
+              } @else {
+                <div class="text-[11px] font-bold text-slate-300 mb-2">
+                  🧐 Hãy đoán xem bức tranh trên vẽ từ khóa gì. Bạn chỉ có 1 lượt đoán duy nhất!
+                </div>
+                <form (submit)="onSubmitGuess(); $event.preventDefault()" class="flex gap-2">
+                  <input
+                    type="text"
+                    [(ngModel)]="guessText"
+                    name="galleryGuess"
+                    placeholder="Họ đang vẽ từ gì? Nhập vào đây..."
+                    autocomplete="off"
+                    class="flex-1 px-3 py-2 rounded-xl bg-purple-950/40 border-3 border-black text-white placeholder-purple-300/30 focus:outline-none focus:border-green-500 font-bold transition-all text-xs shadow-inner"
+                  />
+                  <button
+                    type="submit"
+                    class="px-4 py-2 bg-green-500 hover:bg-green-400 active:scale-95 transition-all text-white text-[10px] font-black uppercase tracking-wider rounded-xl border-3 border-black shadow-[2px_2px_0px_rgba(0,0,0,1)] cursor-pointer"
+                  >
+                    Nộp
+                  </button>
+                </form>
+              }
             </div>
           </div>
           

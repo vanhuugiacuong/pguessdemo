@@ -25,32 +25,12 @@
     <!-- Center Logo -->
     <div class="flex flex-col items-center">
       <div class="gartic-logo-container flex flex-col items-center rotate-[-1deg]">
-        <div
-          class="logo-shield bg-slate-950 px-7 py-2.5 rounded-[2rem] border-[4px] border-slate-900 shadow-2xl flex flex-col items-center relative"
-        >
-          <!-- Sparkles -->
-          <span class="absolute top-1.5 left-4 text-xs animate-pulse">⚡</span>
-          <span class="absolute bottom-1.5 right-4 text-xs animate-pulse">✨</span>
-
-          <span
-            class="text-xl font-black italic tracking-wider text-pink-500 uppercase drop-shadow-[0_2px_0_rgba(0,0,0,1)] leading-none"
-          >
-            P
-          </span>
-          <span
-            class="text-4xl font-black tracking-wide text-white uppercase drop-shadow-[0_4px_0_rgba(0,0,0,1)] leading-none mt-1 flex items-center gap-0.5"
-          >
-            Gu<span
-              class="logo-o w-7 h-7 border-[4px] border-dashed border-white rounded-full inline-flex items-center justify-center animate-spin-slow text-xl pb-1"
-              >e</span
-            >ss
-          </span>
-        </div>
-        <span
-          class="subtitle-text text-yellow-400 font-extrabold text-xs tracking-widest mt-1.5 uppercase drop-shadow-[0_2px_0_rgba(0,0,0,1)]"
-        >
-          Tam Sao Thất Bản
-        </span>
+        <img
+          src="/assets/logo.png"
+          alt="PGuess Logo"
+          class="w-48 h-auto filter drop-shadow-[0_6px_12px_rgba(0,0,0,0.5)]"
+        />
+    
       </div>
     </div>
 
@@ -67,7 +47,7 @@
       <!-- Card Header Banner: Tab selector -->
       <div class="flex border-b-4 border-white/10 bg-slate-950/40 font-bold">
         <button
-          (click)="activeTab = 'create'"
+          (click)="setActiveTab('create')"
           [ngClass]="{
             'bg-purple-600/30 font-black border-r-4 border-white/10 text-green-400':
               activeTab === 'create',
@@ -78,14 +58,13 @@
           Tạo phòng mới
         </button>
         <button
-          (click)="activeTab = 'join'"
+          (click)="setActiveTab('join')"
           [ngClass]="{
             'bg-purple-600/30 font-black border-l-4 border-white/10 text-green-400':
               activeTab === 'join',
             'text-slate-400 hover:text-white': activeTab !== 'join',
           }"
           class="flex-1 py-3.5 text-xs uppercase tracking-widest transition-all cursor-pointer border-0 outline-none"
-          [disabled]="isDirectJoin"
         >
           Vào phòng bằng mã
         </button>
@@ -109,7 +88,7 @@
             <button
               class="absolute bottom-0 right-0 w-9 h-9 bg-green-500 hover:bg-green-400 border-2 border-white rounded-full flex items-center justify-center shadow-lg group-hover:rotate-180 transition-all duration-300 cursor-pointer"
             >
-              <svg lucideRefreshCw class="w-4 h-4 text-white"></svg>
+              <app-icon name="refreshCw" class="w-4 h-4 text-white"></app-icon>
             </button>
           </div>
 
@@ -129,7 +108,7 @@
             </div>
 
             <!-- Tab Content: Create Room Settings -->
-            <div *ngIf="activeTab === 'create'" class="grid grid-cols-2 gap-4 animate-fade-in">
+            <div *ngIf="activeTab === 'create'" @tabChange class="grid grid-cols-2 gap-4">
               <div class="space-y-1.5 flex flex-col justify-end">
                 <label class="block text-xs font-extrabold tracking-wide text-purple-200 uppercase"
                   >Chế độ chơi</label
@@ -192,15 +171,15 @@
             </div>
 
             <!-- Tab Content: Join Room -->
-            <div *ngIf="activeTab === 'join'" class="space-y-1.5 animate-fade-in">
+            <div *ngIf="activeTab === 'join'" @tabChange class="space-y-1.5">
               <label class="block text-xs font-extrabold tracking-wide text-purple-200 uppercase"
                 >Mã phòng chơi</label
               >
               <input
                 type="text"
-                [(ngModel)]="roomIdToJoin"
-                [disabled]="isDirectJoin"
-                class="w-full px-4 py-3 rounded-xl bg-purple-950/30 border-2 border-purple-800/60 text-white placeholder-purple-800/40 font-bold text-base focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all shadow-inner uppercase disabled:opacity-50 disabled:cursor-not-allowed"
+                [ngModel]="roomIdToJoin"
+                (ngModelChange)="onRoomIdChange($event)"
+                class="w-full px-4 py-3 rounded-xl bg-purple-950/30 border-2 border-purple-800/60 text-white placeholder-purple-800/40 font-bold text-base focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all shadow-inner uppercase"
                 placeholder="NHẬP MÃ PHÒNG (VD: ABCXYZ)..."
               />
             </div>
@@ -214,7 +193,7 @@
             (click)="onCreateRoom()"
             class="play-btn px-10 py-3 bg-white hover:bg-slate-100 font-black text-purple-950 text-lg rounded-full shadow-2xl active:scale-95 transition-all cursor-pointer flex items-center gap-2.5 border-b-6 border-purple-300 shadow-purple-900/30"
           >
-            <svg lucidePlay class="w-6 h-6 text-green-500 fill-green-500"></svg> 
+            <app-icon name="play" class="w-6 h-6 text-green-500 fill-green-500"></app-icon> 
             TẠO PHÒNG MỚI
           </button>
           
@@ -223,7 +202,7 @@
             (click)="onJoinRoom()"
             class="play-btn px-10 py-3 bg-white hover:bg-slate-100 font-black text-purple-950 text-lg rounded-full shadow-2xl active:scale-95 transition-all cursor-pointer flex items-center gap-2.5 border-b-6 border-purple-300 shadow-purple-900/30"
           >
-            <svg lucidePlay class="w-6 h-6 text-green-500 fill-green-500"></svg> 
+            <app-icon name="play" class="w-6 h-6 text-green-500 fill-green-500"></app-icon> 
             THAM GIA PHÒNG
           </button>
         </div>
@@ -265,7 +244,7 @@
           (click)="prevCarousel()"
           class="w-8 h-8 rounded-full border border-slate-700 bg-slate-900/60 hover:bg-slate-900 active:scale-90 transition-all flex items-center justify-center text-sm font-black text-slate-300 hover:text-white cursor-pointer"
         >
-          <svg lucideChevronLeft class="w-4 h-4"></svg>
+          <app-icon name="chevronLeft" class="w-4 h-4"></app-icon>
         </button>
 
         <!-- Dot indicators -->
@@ -289,7 +268,7 @@
           (click)="nextCarousel()"
           class="w-8 h-8 rounded-full border border-slate-700 bg-slate-900/60 hover:bg-slate-900 active:scale-90 transition-all flex items-center justify-center text-sm font-black text-slate-300 hover:text-white cursor-pointer"
         >
-          <svg lucideChevronRight class="w-4 h-4"></svg>
+          <app-icon name="chevronRight" class="w-4 h-4"></app-icon>
         </button>
       </div>
     </div>
@@ -324,28 +303,28 @@
           class="hover:opacity-80 transition-opacity flex items-center justify-center"
           title="Music"
         >
-          <svg lucideMusic class="w-4 h-4"></svg>
+          <app-icon name="music" class="w-4 h-4"></app-icon>
         </a>
         <a
           href="#"
           class="hover:opacity-80 transition-opacity flex items-center justify-center"
           title="Video"
         >
-          <svg lucideVideo class="w-4 h-4"></svg>
+          <app-icon name="video" class="w-4 h-4"></app-icon>
         </a>
         <a
           href="#"
           class="hover:opacity-80 transition-opacity flex items-center justify-center"
           title="Chat"
         >
-          <svg lucideMessageSquare class="w-4 h-4"></svg>
+          <app-icon name="messageSquare" class="w-4 h-4"></app-icon>
         </a>
         <a
           href="#"
           class="hover:opacity-80 transition-opacity flex items-center justify-center"
           title="Gallery"
         >
-          <svg lucideCamera class="w-4 h-4"></svg>
+          <app-icon name="camera" class="w-4 h-4"></app-icon>
         </a>
       </div>
     </div>
