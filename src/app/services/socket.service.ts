@@ -51,7 +51,7 @@ export class SocketService {
     // 3. Môi trường deploy (Production)
     // Mặc định tự động nhận diện cùng domain deploy.
     // Nếu deploy Backend ở tên miền khác Frontend (ví dụ: FE ở Netlify, BE ở Render), hãy sửa dòng dưới đây thành URL của Backend (ví dụ: 'https://pguess-api.onrender.com').
-    return `${protocol}//${hostname}`;
+    return 'https://pguess-api.onrender.com';
   }
 
   constructor() {
