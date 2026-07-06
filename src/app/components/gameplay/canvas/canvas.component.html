@@ -13,32 +13,32 @@
     class="gartic-slate flex flex-col w-full h-full p-5 md:p-6 rounded-[2.5rem] bg-[#5a1c2d]/25 border-4 border-white/5 backdrop-blur-sm shadow-2xl relative">
 
     <!-- Top Row: Palette + Notepad + Tools -->
-    <div class="flex flex-row items-stretch gap-4 flex-1 min-h-0 w-full justify-center">
+    <div class="flex flex-col lg:flex-row items-center lg:items-stretch gap-3 lg:gap-4 flex-1 min-h-0 w-full justify-center">
 
-      <!-- 1. Left Color Panel (vertical burgundy container) -->
+      <!-- 1. Left Color Panel (horizontal/vertical container) -->
       @if (!readOnly) {
         <div
-          class="gartic-side-panel w-[136px] shrink-0 flex flex-col gap-4 p-3.5 bg-[#591729] border-[3px] border-[#360b16] rounded-2xl shadow-xl items-center justify-start">
-          <!-- 3-column Color Palette Grid -->
-          <div class="grid grid-cols-3 gap-2 w-full">
+          class="gartic-side-panel w-full lg:w-[136px] shrink-0 flex flex-row lg:flex-col gap-2.5 lg:gap-4 p-2.5 lg:p-3.5 bg-[#591729] border-[3px] border-[#360b16] rounded-2xl shadow-xl items-center justify-between lg:justify-start">
+          <!-- Color Palette Grid / Flex row -->
+          <div class="flex flex-row flex-wrap gap-1.5 justify-center lg:grid lg:grid-cols-3 lg:gap-2 w-full max-w-full">
             @for (col of colors; track col) {
               <button [style.backgroundColor]="col" (click)="selectColor(col)" [ngClass]="{
                   'ring-2 ring-white scale-105 active:scale-95 shadow-md': currentColor === col && selectedTool !== 'eraser',
                   'hover:scale-105': true
-                }" class="w-8 h-8 rounded-md border border-black/40 transition-all cursor-pointer" [title]="col"></button>
+                }" class="w-6 h-6 sm:w-8 sm:h-8 rounded-md border border-black/40 transition-all cursor-pointer shrink-0" [title]="col"></button>
             }
           </div>
 
-          <div class="h-[2.5px] w-full bg-[#360b16]/60"></div>
+          <div class="hidden lg:block h-[2.5px] w-full bg-[#360b16]/60"></div>
 
-          <!-- Selected Color Bar (bottom rectangle) -->
+          <!-- Selected Color Bar (bottom block) -->
           <div [style.backgroundColor]="currentColor"
-            class="w-full h-16 rounded-lg border-2 border-[#360b16] shadow-inner transition-all duration-150"></div>
+            class="w-10 h-10 lg:w-full lg:h-16 rounded-lg border-2 border-[#360b16] shadow-inner transition-all duration-150 shrink-0"></div>
         </div>
       }
 
       <!-- 2. Center: Spiral Notebook Canvas Board -->
-      <div class="flex-1 flex flex-col relative min-w-0 max-w-[850px]">
+      <div class="flex-1 flex flex-col relative min-w-0 w-full max-w-[850px]">
 
         <!-- Silver Spiral notebook rings (overlays top border) -->
         <div class="absolute -top-5 left-[22%] flex flex-col items-center z-35 pointer-events-none">
@@ -90,7 +90,7 @@
 
         <!-- Notebook Paper (Canvas board) -->
         <div
-          class="relative w-full flex-1 bg-white rounded-b-3xl border-[3px] border-[#1d123d] border-t-0 overflow-hidden min-h-[350px] shadow-2xl flex items-center justify-center notepad-pages-stack">
+          class="relative w-full flex-1 bg-white rounded-b-3xl border-[3px] border-[#1d123d] border-t-0 overflow-hidden min-h-[250px] sm:min-h-[350px] shadow-2xl flex items-center justify-center notepad-pages-stack">
           <!-- Watermark "Gartic Phone" logo in center -->
           <div class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.05] select-none">
             <span class="text-5xl font-black italic tracking-widest text-[#1d123d] uppercase">PGuess</span>
@@ -121,20 +121,20 @@
         </div>
       </div>
 
-      <!-- 3. Right Tools Panel (vertical burgundy container) -->
+      <!-- 3. Right Tools Panel (horizontal/vertical container) -->
       @if (!readOnly) {
         <div
-          class="gartic-side-panel w-[136px] shrink-0 flex flex-col p-3.5 bg-[#591729] border-[3px] border-[#360b16] rounded-2xl shadow-xl items-center justify-start">
-          <!-- Toolbox Grid of 10 items (2x5) -->
-          <div class="grid grid-cols-2 gap-3 w-full">
+          class="gartic-side-panel w-full lg:w-[136px] shrink-0 flex flex-row lg:flex-col gap-2.5 lg:gap-4 p-2.5 lg:p-3.5 bg-[#591729] border-[3px] border-[#360b16] rounded-2xl shadow-xl items-center justify-center lg:justify-start">
+          <!-- Toolbox Grid / Flex row -->
+          <div class="flex flex-row flex-wrap gap-1.5 sm:gap-2 justify-center lg:grid lg:grid-cols-2 lg:gap-3 w-full">
             <!-- 1. Pencil (Brush) -->
             <button (click)="setTool('brush')" [ngClass]="{
                 'gartic-tool-active': selectedTool === 'brush',
                 'gartic-tool-inactive': selectedTool !== 'brush'
               }"
-              class="w-12 h-12 rounded-xl border transition-all cursor-pointer flex items-center justify-center shadow-sm"
+              class="w-9 h-9 lg:w-12 lg:h-12 rounded-xl border transition-all cursor-pointer flex items-center justify-center shadow-sm shrink-0"
               title="Bút chì">
-              <app-icon name="pencil" class="w-7 h-7 stroke-current fill-none stroke-[2.5]"></app-icon>
+              <app-icon name="pencil" class="w-5 h-5 lg:w-7 lg:h-7 stroke-current fill-none stroke-[2.5]"></app-icon>
             </button>
 
             <!-- 2. Eraser -->
@@ -142,9 +142,9 @@
                 'gartic-tool-active': selectedTool === 'eraser',
                 'gartic-tool-inactive': selectedTool !== 'eraser'
               }"
-              class="w-12 h-12 rounded-xl border transition-all cursor-pointer flex items-center justify-center shadow-sm"
+              class="w-9 h-9 lg:w-12 lg:h-12 rounded-xl border transition-all cursor-pointer flex items-center justify-center shadow-sm shrink-0"
               title="Tẩy xóa">
-              <app-icon name="eraser" class="w-7 h-7 stroke-current fill-none stroke-[2.5]"></app-icon>
+              <app-icon name="eraser" class="w-5 h-5 lg:w-7 lg:h-7 stroke-current fill-none stroke-[2.5]"></app-icon>
             </button>
 
             <!-- 3. Rectangle Shape -->
@@ -152,9 +152,9 @@
                 'gartic-tool-active': selectedTool === 'rectangle',
                 'gartic-tool-inactive': selectedTool !== 'rectangle'
               }"
-              class="w-12 h-12 rounded-xl border transition-all cursor-pointer flex items-center justify-center shadow-sm"
+              class="w-9 h-9 lg:w-12 lg:h-12 rounded-xl border transition-all cursor-pointer flex items-center justify-center shadow-sm shrink-0"
               title="Vẽ hình vuông">
-              <app-icon name="square" class="w-7 h-7 stroke-current fill-none stroke-[2.5]"></app-icon>
+              <app-icon name="square" class="w-5 h-5 lg:w-7 lg:h-7 stroke-current fill-none stroke-[2.5]"></app-icon>
             </button>
 
             <!-- 4. Circle Shape -->
@@ -162,9 +162,9 @@
                 'gartic-tool-active': selectedTool === 'circle',
                 'gartic-tool-inactive': selectedTool !== 'circle'
               }"
-              class="w-12 h-12 rounded-xl border transition-all cursor-pointer flex items-center justify-center shadow-sm"
+              class="w-9 h-9 lg:w-12 lg:h-12 rounded-xl border transition-all cursor-pointer flex items-center justify-center shadow-sm shrink-0"
               title="Vẽ hình tròn">
-              <app-icon name="circle" class="w-7 h-7 stroke-current fill-none stroke-[2.5]"></app-icon>
+              <app-icon name="circle" class="w-5 h-5 lg:w-7 lg:h-7 stroke-current fill-none stroke-[2.5]"></app-icon>
             </button>
 
             <!-- 5. Line Shape -->
@@ -172,9 +172,9 @@
                 'gartic-tool-active': selectedTool === 'line',
                 'gartic-tool-inactive': selectedTool !== 'line'
               }"
-              class="w-12 h-12 rounded-xl border transition-all cursor-pointer flex items-center justify-center shadow-sm"
+              class="w-9 h-9 lg:w-12 lg:h-12 rounded-xl border transition-all cursor-pointer flex items-center justify-center shadow-sm shrink-0"
               title="Vẽ đường thẳng">
-              <app-icon name="slash" class="w-7 h-7 stroke-current fill-none stroke-[2.5]"></app-icon>
+              <app-icon name="slash" class="w-5 h-5 lg:w-7 lg:h-7 stroke-current fill-none stroke-[2.5]"></app-icon>
             </button>
 
             <!-- 6. Eyedropper Color Picker -->
@@ -182,9 +182,9 @@
                 'gartic-tool-active': selectedTool === 'picker',
                 'gartic-tool-inactive': selectedTool !== 'picker'
               }"
-              class="w-12 h-12 rounded-xl border transition-all cursor-pointer flex items-center justify-center shadow-sm"
+              class="w-9 h-9 lg:w-12 lg:h-12 rounded-xl border transition-all cursor-pointer flex items-center justify-center shadow-sm shrink-0"
               title="Hút màu">
-              <app-icon name="pipette" class="w-7 h-7 stroke-current fill-none stroke-[2.5]"></app-icon>
+              <app-icon name="pipette" class="w-5 h-5 lg:w-7 lg:h-7 stroke-current fill-none stroke-[2.5]"></app-icon>
             </button>
 
             <!-- 7. Paint Bucket (Fill background) -->
@@ -192,30 +192,30 @@
                 'gartic-tool-active': selectedTool === 'bucket',
                 'gartic-tool-inactive': selectedTool !== 'bucket'
               }"
-              class="w-12 h-12 rounded-xl border transition-all cursor-pointer flex items-center justify-center shadow-sm"
+              class="w-9 h-9 lg:w-12 lg:h-12 rounded-xl border transition-all cursor-pointer flex items-center justify-center shadow-sm shrink-0"
               title="Tô nền">
-              <app-icon name="paintBucket" class="w-7 h-7 stroke-current fill-none stroke-[2.5]"></app-icon>
+              <app-icon name="paintBucket" class="w-5 h-5 lg:w-7 lg:h-7 stroke-current fill-none stroke-[2.5]"></app-icon>
             </button>
 
             <!-- 8. Clear Canvas -->
             <button (click)="clearCanvas()"
-              class="gartic-tool-inactive w-12 h-12 rounded-xl border transition-all cursor-pointer flex items-center justify-center shadow-sm hover:bg-red-850/20"
+              class="gartic-tool-inactive w-9 h-9 lg:w-12 lg:h-12 rounded-xl border transition-all cursor-pointer flex items-center justify-center shadow-sm hover:bg-red-850/20 shrink-0"
               title="Xóa trắng">
-              <app-icon name="trash2" class="w-7 h-7 stroke-current fill-none stroke-[2.5]"></app-icon>
+              <app-icon name="trash2" class="w-5 h-5 lg:w-7 lg:h-7 stroke-current fill-none stroke-[2.5]"></app-icon>
             </button>
 
             <!-- 9. Undo -->
             <button (click)="undo()"
-              class="gartic-tool-inactive w-12 h-12 rounded-xl border transition-all cursor-pointer flex items-center justify-center shadow-sm"
+              class="gartic-tool-inactive w-9 h-9 lg:w-12 lg:h-12 rounded-xl border transition-all cursor-pointer flex items-center justify-center shadow-sm shrink-0"
               title="Hoàn tác">
-              <app-icon name="undo" class="w-7 h-7 stroke-current fill-none stroke-[2.5]"></app-icon>
+              <app-icon name="undo" class="w-5 h-5 lg:w-7 lg:h-7 stroke-current fill-none stroke-[2.5]"></app-icon>
             </button>
 
             <!-- 10. Redo -->
             <button (click)="redo()"
-              class="gartic-tool-inactive w-12 h-12 rounded-xl border transition-all cursor-pointer flex items-center justify-center shadow-sm"
+              class="gartic-tool-inactive w-9 h-9 lg:w-12 lg:h-12 rounded-xl border transition-all cursor-pointer flex items-center justify-center shadow-sm shrink-0"
               title="Làm lại">
-              <app-icon name="redo" class="w-7 h-7 stroke-current fill-none stroke-[2.5]"></app-icon>
+              <app-icon name="redo" class="w-5 h-5 lg:w-7 lg:h-7 stroke-current fill-none stroke-[2.5]"></app-icon>
             </button>
           </div>
         </div>
@@ -224,7 +224,7 @@
 
     <!-- Bottom panel: Brush Sizes, Opacity slider & Done button -->
     @if (!readOnly) {
-      <div class="w-full flex flex-wrap gap-4 items-center justify-between mt-5 select-none">
+      <div class="w-full flex flex-wrap gap-3 items-center justify-between mt-4 lg:mt-5 select-none">
         <!-- Brush Size Circles row -->
         <div class="flex items-center gap-3 bg-[#431321] border-2 border-[#360b16] px-4 py-2.5 rounded-2xl">
           <span class="text-xs font-black text-[#855765] uppercase tracking-wider">Cọ:</span>
